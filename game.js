@@ -425,7 +425,9 @@ async function start() {
     lives = 5;
     score = 0;
     level = 1;
+    waitTime = 550;
     gameOver = false;
+    paused = false;
     playMusic();
     renderLevel();
     while (!gameOver) {
