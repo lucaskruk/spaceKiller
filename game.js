@@ -50,8 +50,11 @@ function removeModal() {
 function submitHighScore() {
     const inputName = document.querySelector('#nameInput');
     const scorestable = document.querySelector('#scoresTableBody');
-    const remove = scorestable.querySelector('#toRemoveTD');
-    remove.remove();
+    
+    if (scorestable.contains(scorestable.querySelector('#toRemoveTD'))) {
+        const remove = scorestable.querySelector('#toRemoveTD');
+        remove.remove();
+    }
 
     const newTr = document.createElement('tr');
     const nameTd = document.createElement('td');

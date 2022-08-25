@@ -22,6 +22,7 @@ button {
     background-color: var(--darkblue);
     color: var(--darkgreen);
     padding: 0.5rem;
+    touch-action: manipulation;
 }
 
 footer {
@@ -49,6 +50,7 @@ footer a {
     height: 1rem;
     font-family: monospace;
     text-align: center;
+    font-size: 8pt;
 }
 .displaysContainer {
     display: flex;
@@ -68,7 +70,7 @@ footer a {
     margin: 1rem 3rem 1rem 0rem;
 }
 .gameControls button {
-    padding: 1rem;
+    padding: 1.5rem;
 }
 .gameControls #wbtn {
     margin: 0rem 2rem 1rem 0rem;
@@ -196,4 +198,16 @@ footer a {
 .scoresTable th {
     border: 1px solid lightskyblue;
     padding: 8px;
+}
+
+@media (min-width: 768px) {
+    #spaceBody tr td {
+        font-size: 12pt;
+    }
+}
+
+@media (min-width: 1024px) {
+    #spaceBody tr td {
+        font-size: 14pt;
+    }
 }
