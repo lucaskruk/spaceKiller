@@ -36,7 +36,6 @@ footer a {
     color: yellow;
 }
 .game {
-    width: 80%;
     margin: auto;
 }
 .spaceTable {
@@ -54,8 +53,9 @@ footer a {
 }
 .displaysContainer {
     display: flex;
-    margin: 1rem;
     font-weight: bold;
+    margin: 1rem auto;
+    justify-content: center;
 }
 .gameButtons {
     margin: 1rem;
@@ -67,19 +67,21 @@ footer a {
 
 .gameControls {
     text-align: end;
-    margin: 1rem 3rem 1rem 0rem;
+    margin: 1rem 1% 1rem 0rem;
+    touch-action: manipulation;
 }
 .gameControls button {
-    padding: 1.5rem;
+    padding: 2.5rem;
 }
 .gameControls #wbtn {
-    margin: 0rem 2rem 1rem 0rem;
+    margin: 0rem 3.4rem 1rem 0rem;
 }
 .gameControls #dbtn {
     margin: 0rem 0rem 0rem 1rem;
 }
+
 .label {
-    margin-right: 5rem;
+    margin-right: 3rem;
 }
 
 .borderCell {
