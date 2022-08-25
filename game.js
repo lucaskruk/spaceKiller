@@ -7,6 +7,7 @@ let gameOver = false;
 let paused = false;
 let levelCleared = false;
 let waitTime = 550;
+const music = new Audio('./Fly.mp3');
 const lastLevel = 11;
 const rows = 18;
 const columns = 18;
@@ -31,7 +32,8 @@ function sleep(ms) {
 }
 
 function playMusic() {
-    let music = new Audio('./Fly.mp3');
+    music.pause();
+    music.currentTime = 0;
     music.addEventListener('ended', function() {
         this.currentTime = 0;
         this.play();
@@ -83,6 +85,12 @@ function pressdButton() {
 
 function pressPauseButton() {
     paused = !paused;
+    if (music.paused) {
+        music.play()
+    } else {
+        music.pause();
+        music.currentTime = 0;
+    }
 }
 
 /* Render Functions */
