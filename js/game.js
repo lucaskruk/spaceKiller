@@ -7,7 +7,12 @@ let gameOver = false;
 let paused = false;
 let levelCleared = false;
 let waitTime = 550;
-const music = new Audio('./Fly.mp3');
+const sounds = {
+    explosion: new Howl({
+        src: ['./audio/explosion.wav']
+    })
+};
+const music = new Audio('./audio/Fly.mp3');
 const lastLevel = 11;
 const rows = 18;
 const columns = 18;
@@ -72,18 +77,27 @@ function submitHighScore() {
 }
 
 function registerKeyPressed(event) {
-    keyPressed = event.key;
+    if (isPlayable()) {
+        movePlayer(event.key);
+    }
+    
 }
 function presswButton() {
-    keyPressed = 'w';
+    if (isPlayable()) {
+        movePlayer('w');
+    }
 }
 
 function pressaButton() {
-    keyPressed = 'a';
+    if (isPlayable()) {
+        movePlayer('a');
+    }
 }
 
 function pressdButton() {
-    keyPressed = 'd';
+    if (isPlayable()) {
+        movePlayer('d');
+    }
 }
 
 function pressPauseButton() {
@@ -202,9 +216,12 @@ function moveCell(origin, destiny) {
     clearCell(origin);
 }
 /* Movement Functions */
-
+function isPlayable() {
+    return !gameOver && !paused && !levelCleared;
+}
 function killEnemy(cell) {
     clearCell(cell);
+    sounds.explosion.play();
     enemies--;
     score += 100;
 }
@@ -325,7 +342,7 @@ function moveEnemies(){
                 if (cellIsEmpty(leftCell)) {
                     moveCell(ship, leftCell);
                 } else {
-                        if (currentRow < rows - 3) {
+                        if (currentRow < rows - 4) {
                             const belowCell = getNextCell('below', currentRow, currentCol);
                             if (cellIsEmpty(belowCell)) {
                                 moveCell(ship, belowCell);
@@ -345,7 +362,7 @@ function moveEnemies(){
                 if (cellIsEmpty(rightCell)) {
                     moveCell(ship, rightCell);
                 } else {
-                    if (currentRow < rows - 3) {
+                    if (currentRow < rows - 4) {
                         const belowCell = getNextCell('below', currentRow, currentCol);
                         if (cellIsEmpty(belowCell)) {
                             moveCell(ship, belowCell);
@@ -357,43 +374,46 @@ function moveEnemies(){
                         }
                     }
                 } 
+            } else {
+                if (currentRow > 2) {
+                    const aboveCell = getNextCell('above', currentRow, currentCol);
+                    if (cellIsEmpty(aboveCell)) {
+                        moveCell(ship, aboveCell)
+                    }
+                }
             }
         }
         
     });
 }
 
-function movePlayer() {
+function movePlayer(direction) {
     const player = document.querySelector('.playerShip');
     const currentRow = player.parentElement.rowIndex;
     const currentCol = player.cellIndex;
-    switch (keyPressed) {
+    switch (direction) {
         case 'w':
             const aboveCell = getNextCell('above', currentRow, currentCol);
             if (cellIsEmpty(aboveCell)) {
                 drawPlayerBullet(aboveCell);
-                aboveCell.setAttribute('blocked', 'true');
             } else if (aboveCell.innerText === enemyBullet) {
                 drawBothBullets(aboveCell);
             } else if (aboveCell.innerText === enemyShip) {
                 clearCell(aboveCell);
                 enemies--;
             }
-            keyPressed = 'x';
         break;
         case 'a':
             const leftCell = getNextCell('left', currentRow, currentCol);
             if (cellIsEmpty(leftCell)) {
                 moveCell(player, leftCell);
             }
-            keyPressed = 'x';
         break;
         case 'd':
             const rightCell = getNextCell('right', currentRow, currentCol);
             if (cellIsEmpty(rightCell)) {
                 moveCell(player, rightCell);
             }
-            keyPressed = 'x';
         break;
     }
 }
