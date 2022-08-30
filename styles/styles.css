@@ -60,8 +60,14 @@ footer a {
     margin: 1rem auto;
     justify-content: center;
 }
+
+#remainingShots {
+    margin: 1rem auto;
+}
+
 .gameButtons {
-    margin: 1rem;
+    margin: 2rem auto;
+    text-align: center;
 }
 .gameButtons button {
     padding: 0.2rem;
@@ -84,7 +90,7 @@ footer a {
 }
 
 .label {
-    margin-right: 3rem;
+    margin-right: 2.5rem;
 }
 
 .borderCell {

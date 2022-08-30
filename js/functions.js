@@ -136,10 +136,17 @@ function renderGameInfo() {
     const scoreLabel = document.querySelector('#scoreDisplay');
     const levelLabel = document.querySelector('#levelDisplay');
     const enemiesLabel = document.querySelector('#enemiesDisplay');
+    const remShotsLabel = document.querySelector('#remainingShots');
     livesLabel.innerText = 'Lives: ' + gameProps.lives;
     scoreLabel.innerText = 'Score: ' + gameProps.currentScore;
     levelLabel.innerText = 'Level: ' + gameProps.level;
     enemiesLabel.innerText = 'Enemies: ' + gameProps.enemies;
+
+    let remShotsStr = 'Shots:'
+    for (let i = 0; i < gameProps.remainingShots; i++) {
+        remShotsStr += ' * '
+    }
+    remShotsLabel.innerText = remShotsStr;
 }
 
 function renderInitialHighScores() {

@@ -33,6 +33,7 @@ async function start() {
     gameProps.gameOver = false;
     gameProps.paused = false;
     gameProps.playerDied = false;
+    gameProps.remainingShots = remainingBullets;
     playMusic();
     renderLevel();
     while (!gameProps.gameOver) {
