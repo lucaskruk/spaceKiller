@@ -51,6 +51,9 @@ footer a {
     text-align: center;
     font-size: 8pt;
 }
+#playerShipImg {
+    height: 1rem;
+}
 .displaysContainer {
     display: flex;
     font-weight: bold;
@@ -187,9 +190,17 @@ footer a {
     visibility: visible;
     opacity: 1;
   }
-.highScores {
-    text-align: center;
-}
+
+  .scoresForm{
+    visibility: hidden;
+  }
+  .scoresForm.is-visible {
+    visibility: visible;
+  }
+
+    .highScores {
+        text-align: center;
+    }
   .scoresTable {
     width: 50%;
     margin: auto;
@@ -205,11 +216,19 @@ footer a {
 @media (min-width: 768px) {
     #spaceBody tr td {
         font-size: 12pt;
+        height: 1.4rem;
+    }
+    #playerShipImg {
+        height: 1.4rem;
     }
 }
 
 @media (min-width: 1024px) {
     #spaceBody tr td {
         font-size: 14pt;
+        height: 1.8rem;
+    }
+    #playerShipImg {
+        height: 1.8rem;
     }
 }
