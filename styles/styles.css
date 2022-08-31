@@ -11,11 +11,17 @@
     box-sizing: border-box;
 }
 
+
 body {
     background-color: var(--darkblue);
     color: var(--darkgreen);
     margin: 1rem;
 }
+
+p {
+    text-align: center;
+}
+
 
 button {
     border-color: var(--darkgreen);
@@ -51,7 +57,7 @@ footer a {
     text-align: center;
     font-size: 8pt;
 }
-#playerShipImg {
+#playerShipImg, #enemyShipImg {
     height: 1rem;
 }
 .displaysContainer {
@@ -63,6 +69,7 @@ footer a {
 
 #remainingShots {
     margin: 1rem auto;
+    text-align: center;
 }
 
 .gameButtons {
@@ -224,7 +231,7 @@ footer a {
         font-size: 12pt;
         height: 1.4rem;
     }
-    #playerShipImg {
+    #playerShipImg, #enemyShipImg {
         height: 1.4rem;
     }
 }
@@ -234,7 +241,7 @@ footer a {
         font-size: 14pt;
         height: 1.8rem;
     }
-    #playerShipImg {
+    #playerShipImg, #enemyShipImg {
         height: 1.8rem;
     }
 }

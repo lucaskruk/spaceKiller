@@ -5,7 +5,7 @@ const columns = 18;
 const ships = columns - 2;
 const border = "###";
 const playerShip = "<img src ='./img/ship.png' id='playerShipImg'></img>";
-const enemyShip = " M ";
+const enemyShip = "<img src ='./img/enemy.png' id='enemyShipImg'></img>";
 const enemyBullet = " + ";
 const playerBullet = " * ";
 const bothBullets = "* +";

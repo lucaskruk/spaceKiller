@@ -52,6 +52,10 @@ function recoverScores() {
 /* Listener Functions*/
 
 function removeModal() {
+    let inputForm = document.querySelector(".scoresForm.is-visible");
+    if (inputForm) {
+        inputForm.classList.remove('is-visible');
+    }
     document.querySelector(".modal.is-visible").classList.remove('is-visible');
 }
 
@@ -127,6 +131,7 @@ function renderMessage(message) {
     modal1.querySelector('#modal-message').innerText=message;
     modal1.classList.add('is-visible');
     if (isHighScore(gameProps.currentScore)) {
+        modal1.querySelector('#modal-message').innerText = message + '\n Reached a High Score!';
         modal1.querySelector('.scoresForm').classList.add('is-visible');
     }
 }
