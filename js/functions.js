@@ -22,7 +22,7 @@ function isHighScore(score) {
     
     if (highScores.length === 10) {
         let minScore = 9999999;
-        for (item of highScores) {
+        for (const item of highScores) {
             if (item.score < minScore) {
                 minScore = item.score;
             }
@@ -42,7 +42,7 @@ function saveScore() {
 function recoverScores() {
     let recoveredScores = window.localStorage.getItem('highScores');
     if (recoveredScores) {
-        parsedScores = JSON.parse(recoveredScores);
+        const parsedScores = JSON.parse(recoveredScores);
         parsedScores.forEach( item => {
             highScores.push(item);
         });
@@ -163,7 +163,7 @@ function refreshHighScores() {
     if (highScores.length > 0) {
         const scorestable = document.querySelector('#scoresTableBody');
         scorestable.replaceChildren();
-        for (score of highScores) {
+        for (const score of highScores) {
            renderHighScore(score, scorestable);
         }
     }
