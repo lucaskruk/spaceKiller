@@ -5,6 +5,8 @@ import { useAudioManager } from './hooks/useAudioManager.js';
 import { GameBoard } from './components/GameBoard.jsx';
 import { KeyboardControls, OnScreenControls } from './components/GameControls.jsx';
 
+const LEVEL_CLEAR_TICK_MS = 150;
+
 function StatusBanner({ status }) {
   if (status.gameOver) {
     return <p className="status-banner status-banner--danger">Game Over</p>;
@@ -80,9 +82,11 @@ function GameShell() {
 
   const { musicEnabled, toggleMusic } = useAudioManager(events);
   const isTransitioning = Boolean(transition && transition.mode !== 'idle');
+  const isLevelClearTransition = transition?.mode === 'level-clear-rise' || transition?.mode === 'level-clear-fill';
+  const loopDelay = isLevelClearTransition ? LEVEL_CLEAR_TICK_MS : metrics.waitTime;
   const isRunning = !status.paused && !status.gameOver && !status.playerDied && (!status.levelCleared || isTransitioning);
 
-  useGameLoop(metrics.waitTime, isRunning);
+  useGameLoop(loopDelay, isRunning);
 
   return (
     <div className="app-shell">
