@@ -1,5 +1,10 @@
-import React, { createContext, useContext, useMemo, useReducer } from 'react';
-import { ACTIONS, createInitialState, gameReducer } from '../game/state.js';
+﻿import React, { createContext, useContext, useEffect, useMemo, useReducer } from 'react';
+import {
+  ACTIONS,
+  createInitialState,
+  gameReducer,
+  HIGH_SCORE_STORAGE_KEY,
+} from '../game/state.js';
 
 const GameStateContext = createContext(null);
 const GameDispatchContext = createContext(null);
@@ -7,6 +12,19 @@ const GameDispatchContext = createContext(null);
 export function GameProvider({ children }) {
   const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState);
   const contextValue = useMemo(() => state, [state]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('localStorage' in window)) {
+      return;
+    }
+
+    try {
+      const payload = JSON.stringify(state.highScores ?? []);
+      window.localStorage.setItem(HIGH_SCORE_STORAGE_KEY, payload);
+    } catch (error) {
+      // Persist errors can be safely ignored.
+    }
+  }, [state.highScores]);
 
   return (
     <GameStateContext.Provider value={contextValue}>

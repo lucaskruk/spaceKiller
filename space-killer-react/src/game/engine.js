@@ -309,13 +309,26 @@ const resetTransition = (draft) => {
   draft.transition.progress = 0;
 };
 
-const fillRowWithBorders = (board, row) => {
+const applyLevelLayout = (draft) => {
+  const { board, enemies, player } = buildLevelLayout();
+  draft.board = board;
+  draft.enemies = enemies;
+  draft.player = player;
+  draft.status.playerDied = false;
+  draft.status.levelCleared = false;
+  draft.ammo.remainingShots = MAX_CONCURRENT_SHOTS;
+  draft.queuedInput.move = null;
+  draft.queuedInput.fire = false;
+  resetTransition(draft);
+};
+
+const fillRowWithFiller = (board, row) => {
   if (row <= 0 || row >= BOARD_ROWS - 1) {
     return;
   }
   for (let col = 1; col < BOARD_COLS - 1; col += 1) {
     const cell = board[row][col];
-    cell.type = CELL_TYPES.BORDER;
+    cell.type = CELL_TYPES.FILLER;
     cell.blocked = true;
     cell.occupantId = null;
   }
@@ -342,14 +355,7 @@ const advanceToNextLevel = (draft, { awardBonus } = {}) => {
   }
 
   draft.metrics.level += 1;
-  const { board, enemies, player } = buildLevelLayout();
-  draft.board = board;
-  draft.enemies = enemies;
-  draft.player = player;
-  draft.status.levelCleared = false;
-  draft.status.playerDied = false;
-  draft.ammo.remainingShots = MAX_CONCURRENT_SHOTS;
-  resetTransition(draft);
+  applyLevelLayout(draft);
   draft.events.push('level-start');
 };
 
@@ -380,7 +386,7 @@ const runLevelClearTransition = (draft) => {
   if (draft.transition.mode === 'level-clear-fill') {
     const nextRow = draft.transition.progress ?? 1;
     if (nextRow < BOARD_ROWS - 1) {
-      fillRowWithBorders(draft.board, nextRow);
+      fillRowWithFiller(draft.board, nextRow);
       draft.transition.progress = nextRow + 1;
       return;
     }
@@ -469,15 +475,47 @@ const moveEnemies = (draft) => {
   });
 };
 
+const restartCurrentLevel = (draft) => {
+  applyLevelLayout(draft);
+  draft.events.push('player-respawn');
+  draft.events.push('level-restart');
+};
+
+const triggerGameOver = (draft) => {
+  if (draft.status.gameOver) {
+    return;
+  }
+  draft.status.gameOver = true;
+  draft.status.playerDied = false;
+  draft.queuedInput.move = null;
+  draft.queuedInput.fire = false;
+  resetTransition(draft);
+  draft.events.push('game-over');
+};
+
 const checkGameMilestones = (draft) => {
+  if (draft.status.gameOver) {
+    return;
+  }
+
+  if (draft.status.playerDied) {
+    if (draft.metrics.lives > 0) {
+      restartCurrentLevel(draft);
+    } else {
+      triggerGameOver(draft);
+    }
+    return;
+  }
+
   if (!draft.status.levelCleared && draft.enemies <= 0) {
     draft.status.levelCleared = true;
     startLevelClearTransition(draft);
     draft.events.push('level-cleared');
+    return;
   }
-  if (!draft.status.gameOver && draft.metrics.lives <= 0) {
-    draft.status.gameOver = true;
-    draft.events.push('game-over');
+
+  if (draft.metrics.lives <= 0) {
+    triggerGameOver(draft);
   }
 };
 
@@ -515,14 +553,7 @@ export const prepareNextLevel = (state) => produce(state, (draft) => {
 
 export const respawnPlayer = (state) => produce(state, (draft) => {
   draft.events = [];
-  const { board, enemies, player } = buildLevelLayout();
-  draft.board = board;
-  draft.enemies = enemies;
-  draft.player = player;
-  draft.status.playerDied = false;
-  draft.status.levelCleared = false;
-  draft.ammo.remainingShots = MAX_CONCURRENT_SHOTS;
-  resetTransition(draft);
+  applyLevelLayout(draft);
   draft.events.push('player-respawn');
 });
 

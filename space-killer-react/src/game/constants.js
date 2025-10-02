@@ -7,10 +7,10 @@ export const ENEMY_SPRITE = "<img src='/img/enemy.png' alt='Enemy ship' />";
 export const PLAYER_BULLET_SYMBOL = ' * ';
 export const ENEMY_BULLET_SYMBOL = ' + ';
 export const BOTH_BULLETS_SYMBOL = '* +';
-export const FILLER_SYMBOL = '@@@';
+export const FILLER_SYMBOL = '@@';
 
 export const INITIAL_LIVES = 5;
-export const INITIAL_WAIT_TIME = 550;
+export const INITIAL_WAIT_TIME = 500;
 export const LAST_LEVEL = 11;
 export const MAX_CONCURRENT_SHOTS = 7;
 export const HIGH_SCORE_LIMIT = 10;
@@ -35,4 +35,4 @@ export const ENEMY_ROW = 1;
 export const ENEMY_COL_START = 3;
 export const ENEMY_COL_END = BOARD_COLS - 3;
 
-export const MUSIC_VOLUME = 0.4;
+export const MUSIC_VOLUME = 0.2;
