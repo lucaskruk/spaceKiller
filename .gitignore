@@ -1,0 +1,35 @@
+﻿# dependencies
+node_modules/
+
+# build outputs
+.dist/
+dist/
+build/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# editor directories and files
+.DS_Store
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# local env files
+.env
+.env.*
+
+# coverage and test artifacts
+coverage/
+.vitest/
+
+# lockfiles from alternate managers
+pnpm-lock.yaml
+yarn.lock
