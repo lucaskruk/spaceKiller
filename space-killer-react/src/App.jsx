@@ -1,6 +1,7 @@
 ﻿import React from 'react';
 import { GameProvider, useGameState } from './context/GameContext.jsx';
 import { useGameLoop } from './hooks/useGameLoop.js';
+import { useAudioManager } from './hooks/useAudioManager.js';
 import { GameBoard } from './components/GameBoard.jsx';
 import { KeyboardControls, OnScreenControls } from './components/GameControls.jsx';
 
@@ -21,8 +22,10 @@ function StatusBanner({ status }) {
 }
 
 function GameShell() {
-  const { metrics, ammo, status, enemies, events } = useGameState();
-  const isRunning = !status.paused && !status.gameOver && !status.levelCleared && !status.playerDied;
+  const { metrics, ammo, status, enemies, events, transition } = useGameState();
+  const { musicEnabled, toggleMusic } = useAudioManager(events);
+  const isTransitioning = Boolean(transition && transition.mode !== 'idle');
+  const isRunning = !status.paused && !status.gameOver && !status.playerDied && (!status.levelCleared || isTransitioning);
 
   useGameLoop(metrics.waitTime, isRunning);
 
@@ -32,7 +35,16 @@ function GameShell() {
       <header className="app-header">
         <h1>Space Killer React</h1>
         <p>A modern React port of the Pascal classic.</p>
-        <StatusBanner status={status} />
+        <div className="header-controls">
+          <StatusBanner status={status} />
+          <button
+            type="button"
+            className={`control-button music-toggle ${musicEnabled ? 'is-active' : ''}`}
+            onClick={toggleMusic}
+          >
+            {musicEnabled ? 'Stop Music' : 'Play Music'}
+          </button>
+        </div>
       </header>
       <section className="app-stats">
         <p>Level: {metrics.level}</p>

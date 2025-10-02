@@ -1,4 +1,4 @@
-import { produce } from 'immer';
+﻿import { produce } from 'immer';
 import {
   INITIAL_LIVES,
   INITIAL_WAIT_TIME,
@@ -42,6 +42,10 @@ export const createInitialState = () => {
     queuedInput: {
       move: null,
       fire: false,
+    },
+    transition: {
+      mode: 'idle',
+      progress: 0,
     },
     events: [],
   };

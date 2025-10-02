@@ -9,6 +9,9 @@ import {
 import { buildLevelLayout } from './board.js';
 
 const MIN_WAIT_TIME = 120;
+const SPEED_MULTIPLIER = 0.95;
+const LEVEL_BONUS_PER_LEVEL = 250;
+const LEVEL_BONUS_PER_LIFE = 125;
 
 const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const rollDice = () => randomInt(1, 6);
@@ -287,6 +290,115 @@ const moveBothBullets = (draft) => {
   });
 };
 
+const accelerateGame = (draft) => {
+  draft.metrics.waitTime = Math.max(
+    MIN_WAIT_TIME,
+    Math.round(draft.metrics.waitTime * SPEED_MULTIPLIER),
+  );
+};
+
+const calculateLevelBonus = (level, lives) =>
+  (level * LEVEL_BONUS_PER_LEVEL) + (Math.max(0, lives) * LEVEL_BONUS_PER_LIFE);
+
+const resetTransition = (draft) => {
+  if (!draft.transition) {
+    draft.transition = { mode: 'idle', progress: 0 };
+    return;
+  }
+  draft.transition.mode = 'idle';
+  draft.transition.progress = 0;
+};
+
+const fillRowWithBorders = (board, row) => {
+  if (row <= 0 || row >= BOARD_ROWS - 1) {
+    return;
+  }
+  for (let col = 1; col < BOARD_COLS - 1; col += 1) {
+    const cell = board[row][col];
+    cell.type = CELL_TYPES.BORDER;
+    cell.blocked = true;
+    cell.occupantId = null;
+  }
+};
+
+const advanceToNextLevel = (draft, { awardBonus } = {}) => {
+  const completedLevel = draft.metrics.level;
+  if (awardBonus) {
+    const bonus = calculateLevelBonus(completedLevel, draft.metrics.lives);
+    draft.metrics.currentScore += bonus;
+    draft.events.push('level-bonus');
+  }
+
+  accelerateGame(draft);
+  draft.queuedInput.move = null;
+  draft.queuedInput.fire = false;
+
+  if (completedLevel >= LAST_LEVEL) {
+    draft.status.gameOver = true;
+    draft.status.levelCleared = false;
+    resetTransition(draft);
+    draft.events.push('campaign-complete');
+    return;
+  }
+
+  draft.metrics.level += 1;
+  const { board, enemies, player } = buildLevelLayout();
+  draft.board = board;
+  draft.enemies = enemies;
+  draft.player = player;
+  draft.status.levelCleared = false;
+  draft.status.playerDied = false;
+  draft.ammo.remainingShots = MAX_CONCURRENT_SHOTS;
+  resetTransition(draft);
+  draft.events.push('level-start');
+};
+
+const runLevelClearTransition = (draft) => {
+  if (!draft.transition || draft.transition.mode === 'idle') {
+    return;
+  }
+
+  if (draft.transition.mode === 'level-clear-rise') {
+    if (draft.player) {
+      const { row, col } = draft.player;
+      if (row > 1) {
+        moveCell(draft.board, row, col, row - 1, col);
+        draft.player.row -= 1;
+      } else {
+        clearCell(draft.board, row, col);
+        draft.player = null;
+      }
+    }
+
+    if (!draft.player) {
+      draft.transition.mode = 'level-clear-fill';
+      draft.transition.progress = 1;
+    }
+    return;
+  }
+
+  if (draft.transition.mode === 'level-clear-fill') {
+    const nextRow = draft.transition.progress ?? 1;
+    if (nextRow < BOARD_ROWS - 1) {
+      fillRowWithBorders(draft.board, nextRow);
+      draft.transition.progress = nextRow + 1;
+      return;
+    }
+
+    advanceToNextLevel(draft, { awardBonus: true });
+  }
+};
+
+const startLevelClearTransition = (draft) => {
+  if (!draft.transition) {
+    draft.transition = { mode: 'level-clear-rise', progress: 0 };
+  } else {
+    draft.transition.mode = 'level-clear-rise';
+    draft.transition.progress = 0;
+  }
+  draft.queuedInput.move = null;
+  draft.queuedInput.fire = false;
+};
 const moveEnemies = (draft) => {
   const coords = collectCellsOfType(draft.board, CELL_TYPES.ENEMY);
   coords.forEach(({ row, col }) => {
@@ -360,6 +472,7 @@ const moveEnemies = (draft) => {
 const checkGameMilestones = (draft) => {
   if (!draft.status.levelCleared && draft.enemies <= 0) {
     draft.status.levelCleared = true;
+    startLevelClearTransition(draft);
     draft.events.push('level-cleared');
   }
   if (!draft.status.gameOver && draft.metrics.lives <= 0) {
@@ -369,6 +482,13 @@ const checkGameMilestones = (draft) => {
 };
 
 export const advanceGame = (state) => {
+  if (state.transition && state.transition.mode !== 'idle') {
+    return produce(state, (draft) => {
+      draft.events = [];
+      runLevelClearTransition(draft);
+    });
+  }
+
   if (!isPlayable(state)) {
     return state;
   }
@@ -389,24 +509,8 @@ export const advanceGame = (state) => {
 
 export const prepareNextLevel = (state) => produce(state, (draft) => {
   draft.events = [];
-  if (draft.metrics.level >= LAST_LEVEL) {
-    draft.status.gameOver = true;
-    draft.status.levelCleared = false;
-    draft.events.push('campaign-complete');
-    return;
-  }
-
-  draft.metrics.level += 1;
-  draft.metrics.currentScore += 500;
-  draft.metrics.waitTime = Math.max(MIN_WAIT_TIME, draft.metrics.waitTime - 40);
-  const { board, enemies, player } = buildLevelLayout();
-  draft.board = board;
-  draft.enemies = enemies;
-  draft.player = player;
   draft.status.levelCleared = false;
-  draft.status.playerDied = false;
-  draft.ammo.remainingShots = MAX_CONCURRENT_SHOTS;
-  draft.events.push('level-start');
+  advanceToNextLevel(draft, { awardBonus: true });
 });
 
 export const respawnPlayer = (state) => produce(state, (draft) => {
@@ -416,6 +520,11 @@ export const respawnPlayer = (state) => produce(state, (draft) => {
   draft.enemies = enemies;
   draft.player = player;
   draft.status.playerDied = false;
+  draft.status.levelCleared = false;
   draft.ammo.remainingShots = MAX_CONCURRENT_SHOTS;
+  resetTransition(draft);
   draft.events.push('player-respawn');
 });
+
+
+

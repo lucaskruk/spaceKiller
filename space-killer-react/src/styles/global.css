@@ -36,6 +36,16 @@ button {
 
 .app-header {
   text-align: center;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.header-controls {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .app-stats {
@@ -60,7 +70,7 @@ button {
 }
 
 .status-banner {
-  margin-top: 1rem;
+  margin-top: 0;
   padding: 0.5rem 1rem;
   border-radius: 999px;
   display: inline-block;
@@ -92,6 +102,7 @@ button {
   font-size: 12px;
   color: #e2e8f0;
   border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0;
 }
 
 .cell-border {
@@ -99,17 +110,26 @@ button {
 }
 
 .cell-player {
-  color: #facc15;
+  background: rgba(250, 204, 21, 0.15);
 }
 
 .cell-enemy {
-  color: #f87171;
+  background: rgba(248, 113, 113, 0.15);
 }
 
-.cell-player-bullet,
-.cell-enemy-bullet,
+.cell-player-bullet {
+  color: #34d399;
+  background: rgba(34, 197, 94, 0.2);
+}
+
+.cell-enemy-bullet {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.2);
+}
+
 .cell-both-bullets {
-  color: #c084fc;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.2);
 }
 
 .control-panel {
@@ -162,6 +182,26 @@ button {
 
 .control-button--fire {
   background: rgba(192, 38, 211, 0.45);
+}
+
+.music-toggle {
+  min-width: 180px;
+}
+
+.music-toggle.is-active {
+  background: rgba(34, 197, 94, 0.35);
+}
+
+.cell-sprite {
+  width: 22px;
+  height: 22px;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.cell-symbol {
+  display: inline-block;
+  width: 100%;
 }
 
 @media (max-width: 768px) {
