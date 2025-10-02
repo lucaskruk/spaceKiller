@@ -6,7 +6,7 @@ import {
   HIGH_SCORE_LIMIT,
 } from './constants.js';
 import { buildLevelLayout } from './board.js';
-import { advanceGame, prepareNextLevel, respawnPlayer } from './engine.js';
+import { advanceGame, prepareNextLevel, respawnPlayer } from './engine/index.js';
 
 export const HIGH_SCORE_STORAGE_KEY = 'space-killer-highscores';
 

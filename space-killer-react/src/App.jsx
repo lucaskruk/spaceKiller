@@ -5,7 +5,7 @@ import { useAudioManager } from './hooks/useAudioManager.js';
 import { GameBoard } from './components/GameBoard.jsx';
 import { KeyboardControls, OnScreenControls } from './components/GameControls.jsx';
 
-const LEVEL_CLEAR_TICK_MS = 150;
+const LEVEL_CLEAR_TICK_MS = 200;
 
 function StatusBanner({ status }) {
   if (status.gameOver) {
