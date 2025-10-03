@@ -49,6 +49,17 @@ function renderCellContent(cell) {
     );
   }
 
+  if (cell.type === CELL_TYPES.BOSS) {
+    return (
+      <img
+        src="/img/boss.png"
+        alt="Boss ship"
+        className="cell-sprite cell-sprite--boss"
+        draggable={false}
+      />
+    );
+  }
+
   const text = TEXT_SYMBOLS[cell.type] ?? EMPTY_SYMBOL;
   return <span className="cell-symbol">{text}</span>;
 }

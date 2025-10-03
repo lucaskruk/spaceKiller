@@ -6,7 +6,7 @@ html, body {
   margin: 0;
   padding: 0;
   font-family: 'Press Start 2P', system-ui, sans-serif;
-  background: radial-gradient(circle at top, #0f1c3f, #04070f);
+  background: linear-gradient(rgba(4, 7, 15, 0.65), rgba(4, 7, 15, 0.85)), url('/img/background.png') center / cover fixed no-repeat;
   color: #f8f8f2;
   min-height: 100%;
 }
@@ -214,6 +214,11 @@ button {
   height: 22px;
   image-rendering: pixelated;
   pointer-events: none;
+}
+
+.cell-sprite--boss {
+  width: 26px;
+  height: 26px;
 }
 
 .cell-symbol {
