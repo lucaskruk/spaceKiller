@@ -132,6 +132,17 @@ button {
   background: rgba(251, 191, 36, 0.2);
 }
 
+.cell-boss {
+  color: #fda4af;
+  background: rgba(239, 68, 68, 0.25);
+  font-weight: 700;
+}
+
+.cell-boss-diagonal-bullet {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.25);
+}
+
 .control-panel {
   width: 100%;
   display: flex;

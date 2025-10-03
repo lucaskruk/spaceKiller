@@ -1,4 +1,4 @@
-import { BOARD_COLS, BOARD_ROWS, CELL_TYPES } from '../constants.js';
+import { BOARD_COLS, BOARD_ROWS, CELL_TYPES, BOSS_HIT_SCORE } from '../constants.js';
 import { clearCell, collectCellsOfType, drawEnemyBullet, getCell, moveCell } from './grid.js';
 
 const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -6,9 +6,27 @@ const rollDice = () => randomInt(1, 6);
 
 export const killEnemy = (draft, row, col) => {
   const cell = getCell(draft.board, row, col);
-  if (!cell || cell.type !== CELL_TYPES.ENEMY) {
+  if (!cell || (cell.type !== CELL_TYPES.ENEMY && cell.type !== CELL_TYPES.BOSS)) {
     return;
   }
+
+  if (cell.type === CELL_TYPES.BOSS) {
+    if (!draft.boss) {
+      return;
+    }
+    draft.boss.lives = Math.max(0, (draft.boss.lives ?? 0) - 1);
+    draft.metrics.currentScore += BOSS_HIT_SCORE;
+    draft.events.push('boss-hit');
+    if (draft.boss.lives <= 0) {
+      clearCell(draft.board, row, col);
+      draft.enemies = Math.max(0, draft.enemies - 1);
+      draft.boss = null;
+      draft.events.push('boss-defeated');
+      draft.ammo.remainingShots += 1;
+    }
+    return;
+  }
+
   clearCell(draft.board, row, col);
   draft.enemies = Math.max(0, draft.enemies - 1);
   draft.metrics.currentScore += 100;

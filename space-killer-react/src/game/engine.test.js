@@ -9,7 +9,15 @@ import {
   CELL_TYPES,
   INITIAL_WAIT_TIME,
   MAX_CONCURRENT_SHOTS,
+  BOSS_INITIAL_LIVES,
+  BOSS_LEVEL,
 } from './constants.js';
+
+
+import { buildLevelLayout } from './board.js';
+import { moveBossDiagonalBullets } from './engine/projectiles.js';
+import { updateBoss } from './engine/boss.js';
+import { killEnemy } from './engine/enemy.js';
 
 const hasCellOfType = (board, type) =>
   board.some((row) => row.some((cell) => cell.type === type));
@@ -89,6 +97,94 @@ describe('player bullets vs enemy bullets', () => {
     const playerBulletExists = hasCellOfType(state.board, CELL_TYPES.PLAYER_BULLET);
     expect(combinedExists || playerBulletExists).toBe(true);
     expect(state.ammo.remainingShots).toBe(beforeShots);
+  });
+});
+
+
+
+describe('boss level', () => {
+  const createBossState = () => produce(createInitialState(), (draft) => {
+    const layout = buildLevelLayout(BOSS_LEVEL);
+    draft.board = layout.board;
+    draft.enemies = layout.enemies;
+    draft.player = layout.player;
+    draft.boss = layout.boss;
+    draft.metrics.level = BOSS_LEVEL;
+  });
+
+  it('places the boss for the designated level', () => {
+    const layout = buildLevelLayout(BOSS_LEVEL);
+    expect(layout.enemies).toBe(1);
+    expect(layout.boss).not.toBeNull();
+    expect(layout.boss?.lives).toBe(BOSS_INITIAL_LIVES);
+    expect(layout.board[layout.boss.row][layout.boss.col].type).toBe(CELL_TYPES.BOSS);
+  });
+
+  it('reduces boss lives without removing it until defeated', () => {
+    let state = createBossState();
+    const { row, col } = state.boss;
+
+    state = produce(state, (draft) => {
+      draft.events = [];
+      killEnemy(draft, row, col);
+    });
+
+    expect(state.boss?.lives).toBe(BOSS_INITIAL_LIVES - 1);
+    expect(state.board[row][col].type).toBe(CELL_TYPES.BOSS);
+    expect(state.enemies).toBe(1);
+    expect(state.events).toContain('boss-hit');
+
+    for (let i = 1; i < BOSS_INITIAL_LIVES; i += 1) {
+      state = produce(state, (draft) => {
+        draft.events = [];
+        killEnemy(draft, row, col);
+      });
+    }
+
+    expect(state.boss).toBeNull();
+    expect(state.enemies).toBe(0);
+    expect(state.board[row][col].type).toBe(CELL_TYPES.EMPTY);
+    expect(state.events).toContain('boss-defeated');
+  });
+
+  it('fires vertical and diagonal shots together', () => {
+    let state = createBossState();
+    state = produce(state, (draft) => {
+      draft.boss.fireCooldown = 0;
+      draft.boss.moveCooldown = 0;
+      draft.boss.horizontalDirection = 'right';
+      draft.events = [];
+    });
+
+    state = produce(state, (draft) => {
+      updateBoss(draft);
+    });
+
+    const { row, col } = state.boss;
+    const verticalCell = state.board[row + 1][col];
+    expect(verticalCell.type).toBe(CELL_TYPES.ENEMY_BULLET);
+
+    const diagonalShots = [];
+    state.board.forEach((boardRow, rIndex) => {
+      boardRow.forEach((cell, cIndex) => {
+        if (cell.type === CELL_TYPES.BOSS_DIAGONAL_BULLET) {
+          diagonalShots.push({ row: rIndex, col: cIndex, direction: cell.occupantId });
+        }
+      });
+    });
+
+    expect(diagonalShots).toHaveLength(1);
+    const shot = diagonalShots[0];
+    expect(shot.row).toBe(row + 1);
+    expect(Math.abs(shot.col - col)).toBe(1);
+    expect(['left', 'right']).toContain(shot.direction);
+
+    state = produce(state, (draft) => {
+      moveBossDiagonalBullets(draft);
+    });
+
+    const remainingDiagonal = state.board.flat().filter((cell) => cell.type === CELL_TYPES.BOSS_DIAGONAL_BULLET);
+    expect(remainingDiagonal.length).toBeLessThanOrEqual(1);
   });
 });
 

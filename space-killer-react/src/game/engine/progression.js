@@ -30,10 +30,12 @@ export const resetTransition = (draft) => {
 };
 
 export const applyLevelLayout = (draft) => {
-  const { board, enemies, player } = buildLevelLayout();
+  const level = draft.metrics?.level ?? 1;
+  const { board, enemies, player, boss } = buildLevelLayout(level);
   draft.board = board;
   draft.enemies = enemies;
   draft.player = player;
+  draft.boss = boss;
   draft.status.playerDied = false;
   draft.status.levelCleared = false;
   draft.ammo.remainingShots = MAX_CONCURRENT_SHOTS;

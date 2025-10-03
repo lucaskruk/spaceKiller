@@ -32,6 +32,8 @@ const EVENT_SOUND_KEY = {
   'player-fired': 'playerShot',
   'enemy-explosion': 'enemyExplode',
   'player-hit': 'playerExplode',
+  'boss-hit': 'enemyExplode',
+  'boss-defeated': 'winLevel',
   'level-cleared': 'winLevel',
   'campaign-complete': 'winLevel',
   'game-over': 'lose',

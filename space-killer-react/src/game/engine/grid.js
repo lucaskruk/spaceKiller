@@ -49,6 +49,14 @@ export const drawBothBullets = (board, row, col) => {
   }
 };
 
+export const drawBossDiagonalBullet = (board, row, col, direction) => {
+  const cell = setCellType(board, row, col, CELL_TYPES.BOSS_DIAGONAL_BULLET);
+  if (cell) {
+    cell.blocked = false;
+    cell.occupantId = direction === 'left' ? 'left' : 'right';
+  }
+};
+
 export const moveCell = (board, fromRow, fromCol, toRow, toCol) => {
   const origin = getCell(board, fromRow, fromCol);
   const target = getCell(board, toRow, toCol);

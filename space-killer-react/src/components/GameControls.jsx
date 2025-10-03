@@ -11,7 +11,7 @@ function canAcceptInput(status) {
 }
 
 export function KeyboardControls() {
-  const { queueMoveLeft, queueMoveRight, queueShot, togglePause, reset } = useGameActions();
+  const { queueMoveLeft, queueMoveRight, queueShot, togglePause, reset, advanceLevel } = useGameActions();
   const { status } = useGameState();
   const inputEnabled = canAcceptInput(status);
 
@@ -52,12 +52,18 @@ export function KeyboardControls() {
       if (key === 'r' || key === 'R') {
         reset();
         event.preventDefault();
+        return;
+      }
+
+      if (key === 'k' || key === 'K') {
+        advanceLevel();
+        event.preventDefault();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [inputEnabled, queueMoveLeft, queueMoveRight, queueShot, togglePause, reset]);
+  }, [inputEnabled, queueMoveLeft, queueMoveRight, queueShot, togglePause, reset, advanceLevel]);
 
   return null;
 }

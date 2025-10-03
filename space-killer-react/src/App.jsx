@@ -4,8 +4,7 @@ import { useGameLoop } from './hooks/useGameLoop.js';
 import { useAudioManager } from './hooks/useAudioManager.js';
 import { GameBoard } from './components/GameBoard.jsx';
 import { KeyboardControls, OnScreenControls } from './components/GameControls.jsx';
-
-const LEVEL_CLEAR_TICK_MS = 200;
+import { LEVEL_CLEAR_TICK_MS } from './game/constants.js';
 
 function StatusBanner({ status }) {
   if (status.gameOver) {
@@ -74,7 +73,7 @@ function GameOverModal({ score, level, highScores = [], lastScoreId, onRestart }
 }
 
 function GameShell() {
-  const { metrics, ammo, status, enemies, events, transition, highScores, lastScoreId } = useGameState();
+  const { metrics, ammo, status, enemies, events, transition, highScores, lastScoreId, boss } = useGameState();
   const { reset } = useGameActions();
   const handleRestart = React.useCallback(() => {
     reset();
@@ -121,6 +120,7 @@ function GameShell() {
         <p>Enemies remaining: {enemies}</p>
         <p>Shots remaining: {ammo.remainingShots}</p>
         <p>Tick speed: {metrics.waitTime}ms</p>
+        {boss ? <p>Boss lives: {boss.lives}</p> : null}
       </section>
       <main className="app-main">
         <GameBoard />

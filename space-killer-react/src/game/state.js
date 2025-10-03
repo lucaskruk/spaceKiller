@@ -95,7 +95,7 @@ export const ACTIONS = {
 };
 
 export const createInitialState = () => {
-  const { board, enemies, player } = buildLevelLayout();
+  const { board, enemies, player, boss } = buildLevelLayout(1);
   return {
     board,
     enemies,
@@ -123,6 +123,7 @@ export const createInitialState = () => {
       mode: 'idle',
       progress: 0,
     },
+    boss,
     events: [],
     highScores: loadHighScores(),
     lastScoreId: null,

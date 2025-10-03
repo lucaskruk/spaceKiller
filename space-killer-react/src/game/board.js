@@ -6,6 +6,8 @@ import {
   ENEMY_COL_START,
   ENEMY_ROW,
   PLAYER_START,
+  BOSS_LEVEL,
+  BOSS_INITIAL_LIVES,
 } from './constants.js';
 
 export const createCell = (type = CELL_TYPES.EMPTY, overrides = {}) => ({
@@ -28,13 +30,37 @@ export const createBaseBoard = () => {
   return rows;
 };
 
-export const seedEnemies = (board) => {
+const seedStandardEnemies = (board) => {
   let enemyCount = 0;
   for (let col = ENEMY_COL_START; col <= ENEMY_COL_END; col += 1) {
     board[ENEMY_ROW][col] = createCell(CELL_TYPES.ENEMY);
     enemyCount += 1;
   }
-  return enemyCount;
+  return { enemies: enemyCount, boss: null };
+};
+
+const placeBoss = (board) => {
+  const bossCol = Math.floor(BOARD_COLS / 2);
+  board[ENEMY_ROW][bossCol] = createCell(CELL_TYPES.BOSS, { blocked: true });
+  return {
+    enemies: 1,
+    boss: {
+      row: ENEMY_ROW,
+      col: bossCol,
+      lives: BOSS_INITIAL_LIVES,
+      fireCooldown: 1,
+      moveCooldown: 1,
+      horizontalDirection: 'right',
+      diagonalDirection: 'right',
+    },
+  };
+};
+
+export const seedEnemies = (board, level = 1) => {
+  if (level === BOSS_LEVEL) {
+    return placeBoss(board);
+  }
+  return seedStandardEnemies(board);
 };
 
 export const placePlayer = (board) => {
@@ -43,11 +69,11 @@ export const placePlayer = (board) => {
   return { row, col };
 };
 
-export const buildLevelLayout = () => {
+export const buildLevelLayout = (level = 1) => {
   const board = createBaseBoard();
-  const enemies = seedEnemies(board);
+  const { enemies, boss } = seedEnemies(board, level);
   const player = placePlayer(board);
-  return { board, enemies, player };
+  return { board, enemies, player, boss };
 };
 
 export const cloneBoard = (board) => board.map((row) => row.map((cell) => ({ ...cell })));
