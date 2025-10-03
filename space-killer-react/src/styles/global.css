@@ -2,6 +2,10 @@
   box-sizing: border-box;
 }
 
+:root {
+  --board-scale: 1;
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -175,6 +179,11 @@ button {
   padding: 0.75rem;
   border-radius: 18px;
   box-shadow: 0 12px 24px rgba(3, 7, 18, 0.45);
+  --board-scale: clamp(0.6, (min(80vw, 80vh * 0.95) - 2rem) / 520, 1);
+  --board-base-width: 504px;
+  --board-base-height: 504px;
+  width: var(--board-base-width);
+  height: var(--board-base-height);
 }
 
 .board-stage::before {
@@ -184,6 +193,13 @@ button {
   border-radius: inherit;
   box-shadow: inset 0 0 18px rgba(8, 145, 178, 0.25);
   pointer-events: none;
+}
+
+.board-stage table.game-board {
+  width: var(--board-base-width);
+  height: var(--board-base-height);
+  transform: scale(var(--board-scale));
+  transform-origin: top center;
 }
 
 .board-overlay {
@@ -534,6 +550,10 @@ button {
 }
 
 @media (max-width: 768px) {
+  .board-stage {
+    --board-scale: clamp(0.6, (100vw - 2rem) / 520, 1);
+  }
+
   .game-over-overlay {
     padding: 1.5rem;
   }
