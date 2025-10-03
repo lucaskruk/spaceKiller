@@ -2,8 +2,6 @@
 export const BOARD_COLS = 18;
 export const BORDER_SYMBOL = '###';
 export const EMPTY_SYMBOL = '   ';
-export const PLAYER_SPRITE = "<img src='/img/ship.png' alt='Player ship' />";
-export const ENEMY_SPRITE = "<img src='/img/enemy.png' alt='Enemy ship' />";
 export const PLAYER_BULLET_SYMBOL = ' * ';
 export const ENEMY_BULLET_SYMBOL = ' + ';
 export const BOTH_BULLETS_SYMBOL = '* +';
@@ -34,23 +32,22 @@ export const BOSS_FIRE_COOLDOWN = 4;
 export const BOSS_MOVE_COOLDOWN = 2;
 export const BOSS_TELEPORT_COOLDOWN = 10;
 export const BOSS_TELEPORT_CHANCE = 0.12;
-export const BOSS_REVENGE_BURST_SHOTS = 3;
+export const BOSS_REVENGE_BURST_SHOTS = 4;
 export const BOSS_REVENGE_BURST_INTERVAL = 1;
-export const LEVEL_CLEAR_TICK_MS = 200;
+export const LEVEL_CLEAR_TICK_MS = 100;
 export const MAX_CONCURRENT_SHOTS = 7;
-export const PLAYER_RELOAD_TICKS = 4;
+export const PLAYER_RELOAD_TICKS = 3;
 export const HIGH_SCORE_LIMIT = 10;
 export const HIGH_SCORE_NAME_MAX_LENGTH = 12;
-export const MUSIC_VOLUME = 0.2;
 
 export const SOUND_SOURCES = {
   music: {
     src: ['/audio/main_song.mp3'],
-    options: { loop: true, volume: 0.25 },
+    options: { loop: true, volume: 0.2 },
   },
   playerShot: {
     src: ['/audio/playershot.wav'],
-    options: { volume: 0.6 },
+    options: { volume: 0.7 },
   },
   playerExplode: {
     src: ['/audio/player_explode.wav'],
@@ -62,7 +59,7 @@ export const SOUND_SOURCES = {
   },
   winLevel: {
     src: ['/audio/win_level.ogg'],
-    options: { volume: 0.8 },
+    options: { volume: 0.9 },
   },
   lose: {
     src: ['/audio/lose.mp3'],
