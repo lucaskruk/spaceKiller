@@ -1,11 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { produce } from 'immer';
+import { createInitialState, gameReducer } from './state.js';
 import {
   ACTIONS,
-  createInitialState,
-  gameReducer,
-} from './state.js';
-import {
   CELL_TYPES,
   INITIAL_WAIT_TIME,
   MAX_CONCURRENT_SHOTS,

@@ -1,10 +1,6 @@
 ﻿import React, { createContext, useContext, useEffect, useMemo, useReducer } from 'react';
-import {
-  ACTIONS,
-  createInitialState,
-  gameReducer,
-  HIGH_SCORE_STORAGE_KEY,
-} from '../game/state.js';
+import { createInitialState, gameReducer } from '../game/state.js';
+import { ACTIONS, HIGH_SCORE_STORAGE_KEY } from '../game/constants.js';
 
 const GameStateContext = createContext(null);
 const GameDispatchContext = createContext(null);

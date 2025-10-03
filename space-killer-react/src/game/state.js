@@ -4,12 +4,12 @@ import {
   INITIAL_WAIT_TIME,
   MAX_CONCURRENT_SHOTS,
   HIGH_SCORE_LIMIT,
+  HIGH_SCORE_STORAGE_KEY,
+  ACTIONS,
 } from './constants.js';
 import { buildLevelLayout } from './board.js';
 import { advanceGame, prepareNextLevel, respawnPlayer } from './engine/index.js';
 import { performPlayerFire, performPlayerMove } from './engine/player.js';
-
-export const HIGH_SCORE_STORAGE_KEY = 'space-killer-highscores';
 
 const canUseStorage = () => {
   try {
@@ -82,17 +82,6 @@ const recordHighScore = (state) => produce(state, (draft) => {
   draft.lastScoreId = updated.some((item) => item.id === entry.id) ? entry.id : null;
 });
 
-
-export const ACTIONS = {
-  RESET: 'reset',
-  QUEUE_MOVE_LEFT: 'queue-move-left',
-  QUEUE_MOVE_RIGHT: 'queue-move-right',
-  QUEUE_SHOT: 'queue-shot',
-  TICK: 'tick',
-  PAUSE_TOGGLE: 'pause-toggle',
-  ADVANCE_LEVEL: 'advance-level',
-  PLAYER_RESPAWNED: 'player-respawned',
-};
 
 export const createInitialState = () => {
   const { board, enemies, player, boss } = buildLevelLayout(1);

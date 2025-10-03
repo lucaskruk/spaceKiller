@@ -1,15 +1,14 @@
-import {
+﻿import {
   LAST_LEVEL,
   MAX_CONCURRENT_SHOTS,
   BOSS_LEVEL,
+  MIN_WAIT_TIME,
+  SPEED_MULTIPLIER,
+  LEVEL_BONUS_PER_LEVEL,
+  LEVEL_BONUS_PER_LIFE,
 } from '../constants.js';
 import { buildLevelLayout } from '../board.js';
 import { clearCell, fillRowWithFiller, moveCell } from './grid.js';
-
-const MIN_WAIT_TIME = 120;
-const SPEED_MULTIPLIER = 0.95;
-const LEVEL_BONUS_PER_LEVEL = 250;
-const LEVEL_BONUS_PER_LIFE = 125;
 
 const accelerateGame = (draft) => {
   draft.metrics.waitTime = Math.max(

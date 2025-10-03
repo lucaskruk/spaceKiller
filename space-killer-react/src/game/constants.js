@@ -1,4 +1,4 @@
-export const BOARD_ROWS = 18;
+﻿export const BOARD_ROWS = 18;
 export const BOARD_COLS = 18;
 export const BORDER_SYMBOL = '###';
 export const EMPTY_SYMBOL = '   ';
@@ -26,6 +26,45 @@ export const LEVEL_CLEAR_TICK_MS = 200;
 export const MAX_CONCURRENT_SHOTS = 7;
 export const PLAYER_RELOAD_TICKS = 4;
 export const HIGH_SCORE_LIMIT = 10;
+export const MUSIC_VOLUME = 0.2;
+
+export const SOUND_SOURCES = {
+  music: {
+    src: ['/audio/main_song.mp3'],
+    options: { loop: true, volume: 0.25 },
+  },
+  playerShot: {
+    src: ['/audio/playershot.wav'],
+    options: { volume: 0.6 },
+  },
+  playerExplode: {
+    src: ['/audio/player_explode.wav'],
+    options: { volume: 0.7 },
+  },
+  enemyExplode: {
+    src: ['/audio/enemy_explode.wav'],
+    options: { volume: 0.65 },
+  },
+  winLevel: {
+    src: ['/audio/win_level.ogg'],
+    options: { volume: 0.8 },
+  },
+  lose: {
+    src: ['/audio/lose.mp3'],
+    options: { volume: 0.8 },
+  },
+};
+
+export const EVENT_SOUND_KEY = {
+  'player-fired': 'playerShot',
+  'enemy-explosion': 'enemyExplode',
+  'player-hit': 'playerExplode',
+  'boss-hit': 'enemyExplode',
+  'boss-defeated': 'winLevel',
+  'level-cleared': 'winLevel',
+  'campaign-complete': 'winLevel',
+  'game-over': 'lose',
+};
 
 export const CELL_TYPES = {
   BORDER: 'border',
@@ -41,6 +80,18 @@ export const CELL_TYPES = {
   FILLER: 'filler',
 };
 
+export const TEXT_SYMBOLS = {
+  [CELL_TYPES.BORDER]: BORDER_SYMBOL,
+  [CELL_TYPES.EMPTY]: EMPTY_SYMBOL,
+  [CELL_TYPES.PLAYER_BULLET]: PLAYER_BULLET_SYMBOL,
+  [CELL_TYPES.ENEMY_BULLET]: ENEMY_BULLET_SYMBOL,
+  [CELL_TYPES.BOTH_BULLETS]: BOTH_BULLETS_SYMBOL,
+  [CELL_TYPES.FILLER]: FILLER_SYMBOL,
+  [CELL_TYPES.BOSS]: BOSS_SYMBOL,
+  [CELL_TYPES.BOSS_DIAGONAL_BULLET]: BOSS_DIAGONAL_BULLET_SYMBOL,
+  [CELL_TYPES.BOSS_COMBINED_BULLET]: BOSS_COMBINED_BULLET_SYMBOL,
+};
+
 export const PLAYER_START = {
   row: BOARD_ROWS - 2,
   col: Math.round(BOARD_COLS / 2),
@@ -50,4 +101,25 @@ export const ENEMY_ROW = 1;
 export const ENEMY_COL_START = 3;
 export const ENEMY_COL_END = BOARD_COLS - 3;
 
-export const MUSIC_VOLUME = 0.2;
+export const HOLD_INTERVAL = 130;
+export const MOVE_LEFT_KEYS = new Set(['ArrowLeft', 'a', 'A']);
+export const MOVE_RIGHT_KEYS = new Set(['ArrowRight', 'd', 'D']);
+export const FIRE_KEYS = new Set([' ', 'Space', 'Spacebar', 'w', 'W', 'ArrowUp']);
+
+export const HIGH_SCORE_STORAGE_KEY = 'space-killer-highscores';
+
+export const ACTIONS = {
+  RESET: 'reset',
+  QUEUE_MOVE_LEFT: 'queue-move-left',
+  QUEUE_MOVE_RIGHT: 'queue-move-right',
+  QUEUE_SHOT: 'queue-shot',
+  TICK: 'tick',
+  PAUSE_TOGGLE: 'pause-toggle',
+  ADVANCE_LEVEL: 'advance-level',
+  PLAYER_RESPAWNED: 'player-respawned',
+};
+
+export const MIN_WAIT_TIME = 120;
+export const SPEED_MULTIPLIER = 0.95;
+export const LEVEL_BONUS_PER_LEVEL = 250;
+export const LEVEL_BONUS_PER_LIFE = 125;

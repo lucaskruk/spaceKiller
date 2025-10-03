@@ -1,43 +1,6 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Howl } from 'howler';
-
-const SOUND_SOURCES = {
-  music: {
-    src: ['/audio/main_song.mp3'],
-    options: { loop: true, volume: 0.25 },
-  },
-  playerShot: {
-    src: ['/audio/playershot.wav'],
-    options: { volume: 0.6 },
-  },
-  playerExplode: {
-    src: ['/audio/player_explode.wav'],
-    options: { volume: 0.7 },
-  },
-  enemyExplode: {
-    src: ['/audio/enemy_explode.wav'],
-    options: { volume: 0.65 },
-  },
-  winLevel: {
-    src: ['/audio/win_level.ogg'],
-    options: { volume: 0.8 },
-  },
-  lose: {
-    src: ['/audio/lose.mp3'],
-    options: { volume: 0.8 },
-  },
-};
-
-const EVENT_SOUND_KEY = {
-  'player-fired': 'playerShot',
-  'enemy-explosion': 'enemyExplode',
-  'player-hit': 'playerExplode',
-  'boss-hit': 'enemyExplode',
-  'boss-defeated': 'winLevel',
-  'level-cleared': 'winLevel',
-  'campaign-complete': 'winLevel',
-  'game-over': 'lose',
-};
+import { SOUND_SOURCES, EVENT_SOUND_KEY } from '../game/constants.js';
 
 const buildHowls = () => {
   if (typeof window === 'undefined') {

@@ -1,10 +1,11 @@
 ﻿import React, { useEffect, useRef, useCallback } from 'react';
 import { useGameActions, useGameState } from '../context/GameContext.jsx';
-
-const HOLD_INTERVAL = 130;
-const MOVE_LEFT_KEYS = new Set(['ArrowLeft', 'a', 'A']);
-const MOVE_RIGHT_KEYS = new Set(['ArrowRight', 'd', 'D']);
-const FIRE_KEYS = new Set([' ', 'Space', 'Spacebar', 'w', 'W', 'ArrowUp']);
+import {
+  HOLD_INTERVAL,
+  MOVE_LEFT_KEYS,
+  MOVE_RIGHT_KEYS,
+  FIRE_KEYS,
+} from '../game/constants.js';
 
 function canAcceptInput(status) {
   return !status.paused && !status.gameOver && !status.levelCleared && !status.playerDied;
