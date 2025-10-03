@@ -14,41 +14,45 @@ import {
 const hasCellOfType = (board, type) =>
   board.some((row) => row.some((cell) => cell.type === type));
 
-describe('advanceGame queued inputs', () => {
-  it('moves the player left when a left move is queued', () => {
+describe('player actions', () => {
+  it('moves the player immediately when a left move is requested', () => {
     const initial = createInitialState();
     const startRow = initial.player.row;
     const startCol = initial.player.col;
 
-    const queued = gameReducer(initial, { type: ACTIONS.QUEUE_MOVE_LEFT });
-    const advanced = gameReducer(queued, { type: ACTIONS.TICK });
+    const moved = gameReducer(initial, { type: ACTIONS.QUEUE_MOVE_LEFT });
 
-    expect(advanced.player.row).toBe(startRow);
-    expect(advanced.player.col).toBe(startCol - 1);
-    expect(advanced.board[startRow][startCol - 1].type).toBe(CELL_TYPES.PLAYER);
-    expect(advanced.board[startRow][startCol].type).toBe(CELL_TYPES.EMPTY);
-    expect(advanced.queuedInput.move).toBeNull();
+    expect(moved.player.row).toBe(startRow);
+    expect(moved.player.col).toBe(startCol - 1);
+    expect(moved.board[startRow][startCol - 1].type).toBe(CELL_TYPES.PLAYER);
+    expect(moved.board[startRow][startCol].type).toBe(CELL_TYPES.EMPTY);
+    expect(moved.queuedInput.move).toBeNull();
+
+    const afterTick = gameReducer(moved, { type: ACTIONS.TICK });
+    expect(afterTick.player.col).toBe(startCol - 1);
   });
 
-  it('ignores queued movement while the game is paused', () => {
+  it('ignores movement input while the game is paused', () => {
     const initial = createInitialState();
     const paused = gameReducer(initial, { type: ACTIONS.PAUSE_TOGGLE });
-    const queuedWhilePaused = gameReducer(paused, { type: ACTIONS.QUEUE_MOVE_LEFT });
-    const advanced = gameReducer(queuedWhilePaused, { type: ACTIONS.TICK });
 
-    expect(advanced.player.col).toBe(paused.player.col);
-    expect(advanced).toBe(queuedWhilePaused);
+    const attempted = gameReducer(paused, { type: ACTIONS.QUEUE_MOVE_LEFT });
+
+    expect(attempted).toBe(paused);
   });
 
-  it('spawns a player bullet, consumes ammo, and dispatches a fire event', () => {
+  it('fires immediately, consuming ammo and recording an event', () => {
     const initial = createInitialState();
-    const queued = gameReducer(initial, { type: ACTIONS.QUEUE_SHOT });
-    const advanced = gameReducer(queued, { type: ACTIONS.TICK });
 
-    expect(advanced.ammo.remainingShots).toBe(initial.ammo.remainingShots - 1);
-    expect(hasCellOfType(advanced.board, CELL_TYPES.PLAYER_BULLET)).toBe(true);
-    expect(advanced.queuedInput.fire).toBe(false);
-    expect(advanced.events).toContain('player-fired');
+    const fired = gameReducer(initial, { type: ACTIONS.QUEUE_SHOT });
+
+    expect(fired.ammo.remainingShots).toBe(initial.ammo.remainingShots - 1);
+    expect(hasCellOfType(fired.board, CELL_TYPES.PLAYER_BULLET)).toBe(true);
+    expect(fired.queuedInput.fire).toBe(false);
+    expect(fired.events).toEqual(['player-fired']);
+
+    const afterTick = gameReducer(fired, { type: ACTIONS.TICK });
+    expect(afterTick.events.includes('player-fired')).toBe(false);
   });
 });
 
@@ -59,13 +63,12 @@ describe('player bullets vs enemy bullets', () => {
       draft.board[row - 1][col].type = CELL_TYPES.ENEMY_BULLET;
     });
 
-    const queued = gameReducer(initial, { type: ACTIONS.QUEUE_SHOT });
-    const advanced = gameReducer(queued, { type: ACTIONS.TICK });
+    const fired = gameReducer(initial, { type: ACTIONS.QUEUE_SHOT });
 
-    expect(advanced.board[advanced.player.row - 1][advanced.player.col].type)
+    expect(fired.board[fired.player.row - 1][fired.player.col].type)
       .toBe(CELL_TYPES.BOTH_BULLETS);
-    expect(hasCellOfType(advanced.board, CELL_TYPES.BOTH_BULLETS)).toBe(true);
-    expect(advanced.ammo.remainingShots).toBe(initial.ammo.remainingShots - 1);
+    expect(hasCellOfType(fired.board, CELL_TYPES.BOTH_BULLETS)).toBe(true);
+    expect(fired.ammo.remainingShots).toBe(initial.ammo.remainingShots - 1);
   });
 
   it('preserves ammo and state when mid-air bullets collide', () => {

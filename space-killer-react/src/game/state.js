@@ -7,6 +7,7 @@ import {
 } from './constants.js';
 import { buildLevelLayout } from './board.js';
 import { advanceGame, prepareNextLevel, respawnPlayer } from './engine/index.js';
+import { performPlayerFire, performPlayerMove } from './engine/player.js';
 
 export const HIGH_SCORE_STORAGE_KEY = 'space-killer-highscores';
 
@@ -142,15 +143,18 @@ export const gameReducer = (state, action) => {
       });
     case ACTIONS.QUEUE_MOVE_LEFT:
       return produce(state, (draft) => {
-        draft.queuedInput.move = 'left';
+        performPlayerMove(draft, 'left');
+        draft.queuedInput.move = null;
       });
     case ACTIONS.QUEUE_MOVE_RIGHT:
       return produce(state, (draft) => {
-        draft.queuedInput.move = 'right';
+        performPlayerMove(draft, 'right');
+        draft.queuedInput.move = null;
       });
     case ACTIONS.QUEUE_SHOT:
       return produce(state, (draft) => {
-        draft.queuedInput.fire = true;
+        performPlayerFire(draft);
+        draft.queuedInput.fire = false;
       });
     case ACTIONS.TICK: {
       const nextState = advanceGame(state);
