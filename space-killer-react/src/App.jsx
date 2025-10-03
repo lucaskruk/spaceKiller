@@ -61,6 +61,7 @@ function GameShell() {
   const { metrics, ammo, status, enemies, events, transition, highScores, lastScoreId, boss } = useGameState();
   const livesRemaining = Math.max(0, metrics.lives ?? 0);
   const lifeIcons = Array.from({ length: livesRemaining });
+  const bossLifeIcons = boss ? Array.from({ length: Math.max(0, boss.lives ?? 0) }) : [];
   const { reset } = useGameActions();
   const handleRestart = React.useCallback(() => {
     reset();
@@ -89,47 +90,54 @@ function GameShell() {
       <header className="app-header">
         <h1>Space Killer React</h1>
       </header>
-      <section className="app-stats">
-        <p>Level: {metrics.level}</p>
-        <p className="lives-display">
-          <span className="lives-display__label">Lives:</span>
-          <span className="lives-display__icons" aria-hidden="true">
-            {lifeIcons.map((_, index) => (
-              <img
-                key={`life-${index}`}
-                src="/img/player.png"
-                alt=""
-                className="life-icon"
-                draggable={false}
-              />
-            ))}
-          </span>
-        </p>
-        <p>Score: {metrics.currentScore}</p>
-        {boss ? (
-          <p className="lives-display lives-display--boss">
-            <span className="lives-display__label">Boss:</span>
-            <span className="lives-display__icons" aria-hidden="true">
-              {Array.from({ length: Math.max(0, boss.lives ?? 0) }).map((_, index) => (
-                <img
-                  key={`boss-life-${index}`}
-                  src="/img/boss.png"
-                  alt=""
-                  className="life-icon life-icon--boss"
-                  draggable={false}
-                />
-              ))}
-            </span>
-            <span className="lives-display__count">{boss.lives}</span>
-          </p>
-        ) : null}
-      </section>
       <main className="app-main">
-        <div className="board-stage">
-          <GameBoard />
-          {status.paused && !status.gameOver && !status.playerDied ? (
-            <div className="board-overlay" aria-hidden="true">Paused</div>
-          ) : null}
+        <div className="playfield">
+          <div className="hud-bar">
+            <div className="hud-item">
+              <span className="hud-label">Level</span>
+              <span className="hud-value">{metrics.level}</span>
+            </div>
+            <div className="hud-item hud-item--lives">
+              <span className="hud-label">Lives</span>
+              <span className="hud-icons" aria-hidden="true">
+                {lifeIcons.map((_, index) => (
+                  <img
+                    key={`life-${index}`}
+                    src="/img/player.png"
+                    alt=""
+                    className="life-icon"
+                    draggable={false}
+                  />
+                ))}
+              </span>
+            </div>
+            <div className="hud-item">
+              <span className="hud-label">Score</span>
+              <span className="hud-value hud-value--mono">{metrics.currentScore.toLocaleString()}</span>
+            </div>
+            {boss ? (
+              <div className="hud-item hud-item--boss">
+                <span className="hud-label">Boss</span>
+                <span className="hud-icons" aria-hidden="true">
+                  {bossLifeIcons.map((_, index) => (
+                    <img
+                      key={`boss-life-${index}`}
+                      src="/img/boss.png"
+                      alt=""
+                      className="life-icon life-icon--boss"
+                      draggable={false}
+                    />
+                  ))}
+                </span>
+              </div>
+            ) : null}
+          </div>
+          <div className="board-stage">
+            <GameBoard />
+            {status.paused && !status.gameOver && !status.playerDied ? (
+              <div className="board-overlay" aria-hidden="true">Paused</div>
+            ) : null}
+          </div>
         </div>
         <OnScreenControls musicEnabled={musicEnabled} toggleMusic={toggleMusic} />
       </main>
