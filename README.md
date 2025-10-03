@@ -74,3 +74,30 @@ Vitest automatically picks up any file that matches `*.test.js` or `*.spec.js`.
 ## Verifying gameplay parity
 
 Automated tests cover the critical input queueing paths (moving, pausing, and firing). The controls dispatch the same reducer actions as the classic implementation, so gameplay timing remains unchanged while offering both keyboard and touch-friendly inputs.
+
+## Deployment
+
+### Netlify
+
+To deploy on Netlify:
+
+1. Push the `netlify.toml` file to your repository (already added in this repo).
+2. In Netlify, create a new site from Git and select this repository.
+3. When prompted for build settings, use:
+   - **Base directory:** `space-killer-react`
+   - **Build command:** `npm run build`
+   - **Publish directory:** `dist`
+4. Ensure the environment variables are set (if not picked up from `netlify.toml`):
+   - `NODE_VERSION` = `20`
+   - `NPM_VERSION` = `9`
+5. Deploy the site. Netlify will automatically handle SPA routing via the redirect rule in the config file.
+
+For local testing, install the Netlify CLI and run:
+
+```bash
+npm install --global netlify-cli
+netlify dev
+```
+
+This will run the Vite dev server through Netlify's proxy so redirects and environment variables mirror production.
+
