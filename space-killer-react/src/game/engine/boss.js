@@ -6,6 +6,7 @@ import {
   BOSS_MOVE_COOLDOWN,
   BOSS_TELEPORT_COOLDOWN,
   BOSS_TELEPORT_CHANCE,
+  BOSS_REVENGE_BURST_INTERVAL,
   PLAYER_START,
 } from '../constants.js';
 import {
@@ -196,29 +197,59 @@ const fireBossWeapons = (draft) => {
 };
 
 export const updateBoss = (draft) => {
-  if (!draft.boss) {
+  const boss = draft.boss;
+  if (!boss) {
     return;
   }
 
-  if (draft.boss.teleportCooldown > 0) {
-    draft.boss.teleportCooldown -= 1;
+  if (boss.pendingImmediateTeleport) {
+    const teleported = teleportBoss(draft);
+    boss.pendingImmediateTeleport = !teleported;
+    if (teleported) {
+      boss.teleportCooldown = BOSS_TELEPORT_COOLDOWN;
+      boss.revengeFireDelay = 0;
+    } else {
+      boss.teleportCooldown = Math.max(boss.teleportCooldown ?? 0, 1);
+    }
+  } else if (boss.teleportCooldown > 0) {
+    boss.teleportCooldown -= 1;
   } else if (Math.random() < BOSS_TELEPORT_CHANCE) {
     if (teleportBoss(draft)) {
-      draft.boss.teleportCooldown = BOSS_TELEPORT_COOLDOWN;
+      boss.teleportCooldown = BOSS_TELEPORT_COOLDOWN;
     }
   }
 
-  if (draft.boss.moveCooldown > 0) {
-    draft.boss.moveCooldown -= 1;
+  if (boss.moveCooldown > 0) {
+    boss.moveCooldown -= 1;
   } else if (moveBoss(draft)) {
-    draft.boss.moveCooldown = BOSS_MOVE_COOLDOWN;
+    boss.moveCooldown = BOSS_MOVE_COOLDOWN;
   } else {
-    draft.boss.moveCooldown = 1;
+    boss.moveCooldown = 1;
   }
 
-  if (draft.boss.fireCooldown > 0) {
-    draft.boss.fireCooldown -= 1;
+  if (typeof boss.revengeFireDelay !== 'number') {
+    boss.revengeFireDelay = 0;
+  }
+
+  if (boss.revengeShotsRemaining > 0) {
+    if (boss.revengeFireDelay > 0) {
+      boss.revengeFireDelay -= 1;
+    }
+    if (boss.revengeFireDelay <= 0) {
+      if (fireBossWeapons(draft)) {
+        boss.revengeShotsRemaining -= 1;
+        boss.revengeFireDelay = BOSS_REVENGE_BURST_INTERVAL;
+      } else {
+        boss.revengeShotsRemaining = 0;
+      }
+    }
+    boss.fireCooldown = BOSS_FIRE_COOLDOWN;
+    return;
+  }
+
+  if (boss.fireCooldown > 0) {
+    boss.fireCooldown -= 1;
   } else if (fireBossWeapons(draft)) {
-    draft.boss.fireCooldown = BOSS_FIRE_COOLDOWN;
+    boss.fireCooldown = BOSS_FIRE_COOLDOWN;
   }
 };

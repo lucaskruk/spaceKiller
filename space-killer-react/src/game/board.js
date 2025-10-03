@@ -55,6 +55,9 @@ const placeBoss = (board) => {
       horizontalDirection: 'right',
       verticalDirection: 'down',
       diagonalDirection: 'right',
+      revengeShotsRemaining: 0,
+      revengeFireDelay: 0,
+      pendingImmediateTeleport: false,
     },
   };
 };

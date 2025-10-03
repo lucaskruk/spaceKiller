@@ -7,6 +7,7 @@ import {
   ENEMY_STREAK_BONUS_STEP,
   ENEMY_STREAK_BONUS_CAP,
   ACCURACY_BONUS_THRESHOLDS,
+  BOSS_REVENGE_BURST_SHOTS,
 } from '../constants.js';
 import { clearCell, collectCellsOfType, drawEnemyBullet, getCell, moveCell } from './grid.js';
 
@@ -51,6 +52,12 @@ export const killEnemy = (draft, row, col) => {
     draft.boss.lives = Math.max(0, (draft.boss.lives ?? 0) - 1);
     applySkillBonuses(draft, BOSS_HIT_SCORE);
     draft.events.push('boss-hit');
+    if (draft.boss.lives > 0) {
+      draft.boss.pendingImmediateTeleport = true;
+      draft.boss.revengeShotsRemaining = (draft.boss.revengeShotsRemaining ?? 0) + BOSS_REVENGE_BURST_SHOTS;
+      draft.boss.revengeFireDelay = 0;
+      draft.boss.fireCooldown = 0;
+    }
     if (draft.boss.lives <= 0) {
       clearCell(draft.board, row, col);
       draft.enemies = Math.max(0, draft.enemies - 1);
