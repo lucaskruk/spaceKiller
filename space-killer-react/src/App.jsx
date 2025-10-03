@@ -74,6 +74,8 @@ function GameOverModal({ score, level, highScores = [], lastScoreId, onRestart }
 
 function GameShell() {
   const { metrics, ammo, status, enemies, events, transition, highScores, lastScoreId, boss } = useGameState();
+  const livesRemaining = Math.max(0, metrics.lives ?? 0);
+  const lifeIcons = Array.from({ length: livesRemaining });
   const { reset } = useGameActions();
   const handleRestart = React.useCallback(() => {
     reset();
@@ -115,7 +117,20 @@ function GameShell() {
       </header>
       <section className="app-stats">
         <p>Level: {metrics.level}</p>
-        <p>Lives: {metrics.lives}</p>
+        <p className="lives-display">
+          <span className="lives-display__label">Lives:</span>
+          <span className="lives-display__icons" aria-hidden="true">
+            {lifeIcons.map((_, index) => (
+              <img
+                key={`life-${index}`}
+                src="/img/player.png"
+                alt=""
+                className="life-icon"
+                draggable={false}
+              />
+            ))}
+          </span>
+        </p>
         <p>Score: {metrics.currentScore}</p>
         {boss ? <p>Boss lives: {boss.lives}</p> : null}
       </section>

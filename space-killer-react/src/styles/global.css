@@ -56,6 +56,29 @@ button {
   font-size: 0.75rem;
 }
 
+.lives-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lives-display__icons {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.life-icon {
+  width: 18px;
+  height: 18px;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.lives-display__count {
+  font-size: 0.7rem;
+  color: rgba(226, 232, 240, 0.7);
+}
+
 .app-main {
   display: flex;
   flex-direction: column;
