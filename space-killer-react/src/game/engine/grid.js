@@ -57,6 +57,14 @@ export const drawBossDiagonalBullet = (board, row, col, direction) => {
   }
 };
 
+export const drawBossCombinedBullet = (board, row, col, direction) => {
+  const cell = setCellType(board, row, col, CELL_TYPES.BOSS_COMBINED_BULLET);
+  if (cell) {
+    cell.blocked = false;
+    cell.occupantId = direction === 'left' ? 'left' : 'right';
+  }
+};
+
 export const moveCell = (board, fromRow, fromCol, toRow, toCol) => {
   const origin = getCell(board, fromRow, fromCol);
   const target = getCell(board, toRow, toCol);

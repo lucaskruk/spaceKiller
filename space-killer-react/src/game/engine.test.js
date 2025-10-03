@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { produce } from 'immer';
 import {
   ACTIONS,
@@ -11,11 +11,12 @@ import {
   MAX_CONCURRENT_SHOTS,
   BOSS_INITIAL_LIVES,
   BOSS_LEVEL,
+  BOSS_TELEPORT_COOLDOWN,
 } from './constants.js';
 
 
 import { buildLevelLayout } from './board.js';
-import { moveBossDiagonalBullets } from './engine/projectiles.js';
+import { moveBossDiagonalBullets, moveEnemyBullets } from './engine/projectiles.js';
 import { updateBoss } from './engine/boss.js';
 import { killEnemy } from './engine/enemy.js';
 
@@ -147,12 +148,87 @@ describe('boss level', () => {
     expect(state.events).toContain('boss-defeated');
   });
 
+
+
+  it('refunds ammo when diagonal bullets destroy player shots', () => {
+    let state = createBossState();
+    state = produce(state, (draft) => {
+      draft.ammo.remainingShots = 2;
+      for (let r = 1; r < draft.board.length - 1; r += 1) {
+        for (let c = 1; c < draft.board[r].length - 1; c += 1) {
+          draft.board[r][c].type = CELL_TYPES.EMPTY;
+          draft.board[r][c].blocked = false;
+          draft.board[r][c].occupantId = null;
+        }
+      }
+      const diagRow = 4;
+      const diagCol = 4;
+      draft.board[diagRow][diagCol].type = CELL_TYPES.BOSS_DIAGONAL_BULLET;
+      draft.board[diagRow][diagCol].blocked = false;
+      draft.board[diagRow][diagCol].occupantId = 'right';
+      draft.board[diagRow + 1][diagCol + 1].type = CELL_TYPES.PLAYER_BULLET;
+      draft.board[diagRow + 1][diagCol + 1].blocked = false;
+    });
+
+    state = produce(state, (draft) => {
+      moveBossDiagonalBullets(draft);
+    });
+
+    expect(state.ammo.remainingShots).toBe(3);
+    expect(state.board[5][5].type).toBe(CELL_TYPES.EMPTY);
+  });
+
+  it('creates a combined bullet when diagonal intersects a vertical shot and continues trajectory', () => {
+    const enemyRow = 6;
+    const enemyCol = 7;
+
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.8);
+
+    let state = createBossState();
+    state = produce(state, (draft) => {
+      for (let r = 1; r < draft.board.length - 1; r += 1) {
+        for (let c = 1; c < draft.board[r].length - 1; c += 1) {
+          draft.board[r][c].type = CELL_TYPES.EMPTY;
+          draft.board[r][c].blocked = false;
+          draft.board[r][c].occupantId = null;
+        }
+      }
+      const verticalCell = draft.board[enemyRow][enemyCol];
+      verticalCell.type = CELL_TYPES.ENEMY_BULLET;
+      verticalCell.blocked = false;
+      const diagonalCell = draft.board[enemyRow - 1][enemyCol - 1];
+      diagonalCell.type = CELL_TYPES.BOSS_DIAGONAL_BULLET;
+      diagonalCell.blocked = false;
+      diagonalCell.occupantId = 'right';
+    });
+
+    state = produce(state, (draft) => {
+      moveBossDiagonalBullets(draft);
+    });
+
+    expect(state.board[enemyRow][enemyCol].type).toBe(CELL_TYPES.BOSS_COMBINED_BULLET);
+    expect(['left', 'right']).toContain(state.board[enemyRow][enemyCol].occupantId);
+
+    state = produce(state, (draft) => {
+      moveEnemyBullets(draft);
+    });
+
+    const diagonalContinued = state.board.some((boardRow, rIndex) =>
+      boardRow.some((cell, cIndex) => cell.type === CELL_TYPES.BOSS_DIAGONAL_BULLET && rIndex >= enemyRow)
+    );
+
+    expect(diagonalContinued).toBe(true);
+    randomSpy.mockRestore();
+  });
+
   it('fires vertical and diagonal shots together', () => {
     let state = createBossState();
     state = produce(state, (draft) => {
       draft.boss.fireCooldown = 0;
       draft.boss.moveCooldown = 0;
+      draft.boss.teleportCooldown = BOSS_TELEPORT_COOLDOWN;
       draft.boss.horizontalDirection = 'right';
+      draft.boss.verticalDirection = 'down';
       draft.events = [];
     });
 

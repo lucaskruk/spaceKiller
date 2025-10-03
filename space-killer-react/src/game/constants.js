@@ -10,15 +10,18 @@ export const BOTH_BULLETS_SYMBOL = '* +';
 export const FILLER_SYMBOL = '@@';
 export const BOSS_SYMBOL = ' B ';
 export const BOSS_DIAGONAL_BULLET_SYMBOL = ' @ ';
+export const BOSS_COMBINED_BULLET_SYMBOL = ' + @';
 
 export const INITIAL_LIVES = 5;
 export const INITIAL_WAIT_TIME = 400;
-export const LAST_LEVEL = 11;
+export const LAST_LEVEL = 10;
 export const BOSS_LEVEL = 10;
 export const BOSS_INITIAL_LIVES = 5;
 export const BOSS_HIT_SCORE = 250;
 export const BOSS_FIRE_COOLDOWN = 4;
 export const BOSS_MOVE_COOLDOWN = 2;
+export const BOSS_TELEPORT_COOLDOWN = 6;
+export const BOSS_TELEPORT_CHANCE = 0.12;
 export const LEVEL_CLEAR_TICK_MS = 200;
 export const MAX_CONCURRENT_SHOTS = 7;
 export const HIGH_SCORE_LIMIT = 10;
@@ -32,6 +35,7 @@ export const CELL_TYPES = {
   PLAYER_BULLET: 'player-bullet',
   ENEMY_BULLET: 'enemy-bullet',
   BOSS_DIAGONAL_BULLET: 'boss-diagonal-bullet',
+  BOSS_COMBINED_BULLET: 'boss-combined-bullet',
   BOTH_BULLETS: 'both-bullets',
   FILLER: 'filler',
 };

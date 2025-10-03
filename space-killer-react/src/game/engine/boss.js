@@ -4,6 +4,9 @@ import {
   CELL_TYPES,
   BOSS_FIRE_COOLDOWN,
   BOSS_MOVE_COOLDOWN,
+  BOSS_TELEPORT_COOLDOWN,
+  BOSS_TELEPORT_CHANCE,
+  PLAYER_START,
 } from '../constants.js';
 import {
   drawBossDiagonalBullet,
@@ -14,8 +17,9 @@ import {
 import { hitPlayer } from './player.js';
 
 const withinHorizontalBounds = (col) => col > 0 && col < BOARD_COLS - 1;
+const withinVerticalBounds = (row) => row > 0 && row < PLAYER_START.row;
 
-const tryMoveBoss = (draft, direction) => {
+const tryMoveBossHorizontal = (draft, direction) => {
   const boss = draft.boss;
   if (!boss) {
     return false;
@@ -35,17 +39,47 @@ const tryMoveBoss = (draft, direction) => {
   return true;
 };
 
+const tryMoveBossVertical = (draft, direction) => {
+  const boss = draft.boss;
+  if (!boss) {
+    return false;
+  }
+  const delta = direction === 'up' ? -1 : 1;
+  const nextRow = boss.row + delta;
+  if (!withinVerticalBounds(nextRow)) {
+    return false;
+  }
+  const target = getCell(draft.board, nextRow, boss.col);
+  if (!target || target.type !== CELL_TYPES.EMPTY) {
+    return false;
+  }
+  moveCell(draft.board, boss.row, boss.col, nextRow, boss.col);
+  boss.row = nextRow;
+  boss.verticalDirection = direction;
+  return true;
+};
+
 const moveBoss = (draft) => {
   const boss = draft.boss;
   if (!boss) {
     return false;
   }
-  const direction = boss.horizontalDirection ?? 'right';
-  if (tryMoveBoss(draft, direction)) {
+  const preferVertical = Math.random() < 0.4;
+  if (preferVertical && tryMoveBossVertical(draft, boss.verticalDirection ?? 'down')) {
     return true;
   }
-  const fallbackDirection = direction === 'right' ? 'left' : 'right';
-  return tryMoveBoss(draft, fallbackDirection);
+  if (tryMoveBossHorizontal(draft, boss.horizontalDirection ?? 'right')) {
+    return true;
+  }
+  if (!preferVertical && tryMoveBossVertical(draft, boss.verticalDirection ?? 'down')) {
+    return true;
+  }
+  const fallbackHorizontal = (boss.horizontalDirection ?? 'right') === 'right' ? 'left' : 'right';
+  if (tryMoveBossHorizontal(draft, fallbackHorizontal)) {
+    return true;
+  }
+  const fallbackVertical = (boss.verticalDirection ?? 'down') === 'down' ? 'up' : 'down';
+  return tryMoveBossVertical(draft, fallbackVertical);
 };
 
 const spawnVerticalShot = (draft) => {
@@ -112,6 +146,45 @@ const spawnDiagonalShot = (draft) => {
   return { fired: true, direction };
 };
 
+const teleportBoss = (draft) => {
+  const boss = draft.boss;
+  if (!boss) {
+    return false;
+  }
+  const maxRow = PLAYER_START.row - 1;
+  for (let attempts = 0; attempts < 6; attempts += 1) {
+    const targetRow = Math.floor(Math.random() * maxRow) + 1;
+    const targetCol = Math.floor(Math.random() * (BOARD_COLS - 2)) + 1;
+    if (!withinVerticalBounds(targetRow) || !withinHorizontalBounds(targetCol)) {
+      continue;
+    }
+    if (targetRow === boss.row && targetCol === boss.col) {
+      continue;
+    }
+    const targetCell = getCell(draft.board, targetRow, targetCol);
+    if (!targetCell || targetCell.type !== CELL_TYPES.EMPTY) {
+      continue;
+    }
+    const previousRow = boss.row;
+    const previousCol = boss.col;
+    moveCell(draft.board, boss.row, boss.col, targetRow, targetCol);
+    boss.row = targetRow;
+    boss.col = targetCol;
+    if (targetCol > previousCol) {
+      boss.horizontalDirection = 'right';
+    } else if (targetCol < previousCol) {
+      boss.horizontalDirection = 'left';
+    }
+    if (targetRow > previousRow) {
+      boss.verticalDirection = 'down';
+    } else if (targetRow < previousRow) {
+      boss.verticalDirection = 'up';
+    }
+    return true;
+  }
+  return false;
+};
+
 const fireBossWeapons = (draft) => {
   const firedVertical = spawnVerticalShot(draft);
   const diagonalResult = spawnDiagonalShot(draft);
@@ -125,6 +198,14 @@ const fireBossWeapons = (draft) => {
 export const updateBoss = (draft) => {
   if (!draft.boss) {
     return;
+  }
+
+  if (draft.boss.teleportCooldown > 0) {
+    draft.boss.teleportCooldown -= 1;
+  } else if (Math.random() < BOSS_TELEPORT_CHANCE) {
+    if (teleportBoss(draft)) {
+      draft.boss.teleportCooldown = BOSS_TELEPORT_COOLDOWN;
+    }
   }
 
   if (draft.boss.moveCooldown > 0) {

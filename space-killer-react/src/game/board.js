@@ -8,6 +8,7 @@ import {
   PLAYER_START,
   BOSS_LEVEL,
   BOSS_INITIAL_LIVES,
+  BOSS_TELEPORT_COOLDOWN,
 } from './constants.js';
 
 export const createCell = (type = CELL_TYPES.EMPTY, overrides = {}) => ({
@@ -50,7 +51,9 @@ const placeBoss = (board) => {
       lives: BOSS_INITIAL_LIVES,
       fireCooldown: 1,
       moveCooldown: 1,
+      teleportCooldown: BOSS_TELEPORT_COOLDOWN,
       horizontalDirection: 'right',
+      verticalDirection: 'down',
       diagonalDirection: 'right',
     },
   };

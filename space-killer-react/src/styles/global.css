@@ -143,6 +143,12 @@ button {
   background: rgba(56, 189, 248, 0.25);
 }
 
+.cell-boss-combined-bullet {
+  color: #fde68a;
+  background: rgba(250, 204, 21, 0.35);
+  font-weight: 600;
+}
+
 .control-panel {
   width: 100%;
   display: flex;
