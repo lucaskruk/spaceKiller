@@ -92,29 +92,29 @@ button {
   color: rgba(226, 232, 240, 0.75);
 }
 
-.status-banner {
-  margin-top: 0;
-  padding: 0.5rem 1rem;
-  border-radius: 999px;
-  display: inline-block;
-  background: rgba(148, 163, 184, 0.2);
-}
-
-.status-banner--danger {
-  background: rgba(248, 113, 113, 0.35);
-}
-
-.status-banner--success {
-  background: rgba(74, 222, 128, 0.3);
-}
-
-.status-banner--warning {
-  background: rgba(250, 204, 21, 0.3);
-}
-
 .game-board {
   border-collapse: collapse;
   background: rgba(0, 0, 0, 0.4);
+}
+
+.board-stage {
+  position: relative;
+  display: inline-block;
+}
+
+.board-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.72);
+  color: #f8fafc;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  pointer-events: none;
+  backdrop-filter: blur(2px);
 }
 
 .game-board td {
@@ -186,9 +186,28 @@ button {
 }
 
 .movement-controls {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(80px, 1fr));
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.movement-controls__left {
+  display: flex;
   gap: 0.75rem;
+}
+
+.movement-controls__left .control-button {
+  font-size: 1.1rem;
+}
+
+.movement-controls__fire {
+  margin-left: auto;
+  display: flex;
+}
+
+.movement-controls__fire .control-button--fire {
+  font-size: 1.2rem;
 }
 
 .control-button {
@@ -356,7 +375,52 @@ button {
     padding: 1.5rem;
   }
 
+  .control-panel {
+    gap: 1.5rem;
+  }
+
+  .primary-controls {
+    width: 100%;
+    justify-content: center;
+  }
+
   .movement-controls {
-    grid-template-columns: repeat(3, minmax(60px, 1fr));
+    position: fixed;
+    inset: auto 0 1.5rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: none;
+    gap: 1.25rem;
+    padding: 0 1.25rem;
+    z-index: 500;
+  }
+
+  .movement-controls__left,
+  .movement-controls__fire {
+    pointer-events: auto;
+  }
+
+  .movement-controls__left {
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+
+  .movement-controls__left .control-button {
+    min-width: 68px;
+    min-height: 68px;
+    font-size: 1.5rem;
+  }
+
+  .movement-controls__fire {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .movement-controls__fire .control-button--fire {
+    min-width: 76px;
+    min-height: 76px;
+    font-size: 1.6rem;
   }
 }

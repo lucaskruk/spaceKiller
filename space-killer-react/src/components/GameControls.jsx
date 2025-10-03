@@ -123,39 +123,46 @@ export function OnScreenControls() {
         </button>
       </div>
       <div className="movement-controls">
-        <button
-          type="button"
-          className="control-button"
-          disabled={disabled}
-          onPointerDown={startRepeating(queueMoveLeft)}
-          onPointerUp={clearRepeat}
-          onPointerLeave={clearRepeat}
-          onPointerCancel={clearRepeat}
-        >
-          Left
-        </button>
-        <button
-          type="button"
-          className="control-button control-button--fire"
-          disabled={disabled}
-          onPointerDown={startRepeating(queueShot, false)}
-          onPointerUp={clearRepeat}
-          onPointerLeave={clearRepeat}
-          onPointerCancel={clearRepeat}
-        >
-          Fire
-        </button>
-        <button
-          type="button"
-          className="control-button"
-          disabled={disabled}
-          onPointerDown={startRepeating(queueMoveRight)}
-          onPointerUp={clearRepeat}
-          onPointerLeave={clearRepeat}
-          onPointerCancel={clearRepeat}
-        >
-          Right
-        </button>
+        <div className="movement-controls__left">
+          <button
+            type="button"
+            className="control-button"
+            disabled={disabled}
+            aria-label="Move left"
+            onPointerDown={startRepeating(queueMoveLeft)}
+            onPointerUp={clearRepeat}
+            onPointerLeave={clearRepeat}
+            onPointerCancel={clearRepeat}
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            className="control-button"
+            disabled={disabled}
+            aria-label="Move right"
+            onPointerDown={startRepeating(queueMoveRight)}
+            onPointerUp={clearRepeat}
+            onPointerLeave={clearRepeat}
+            onPointerCancel={clearRepeat}
+          >
+            →
+          </button>
+        </div>
+        <div className="movement-controls__fire">
+          <button
+            type="button"
+            className="control-button control-button--fire"
+            disabled={disabled}
+            aria-label="Fire"
+            onPointerDown={startRepeating(queueShot, false)}
+            onPointerUp={clearRepeat}
+            onPointerLeave={clearRepeat}
+            onPointerCancel={clearRepeat}
+          >
+            ✨
+          </button>
+        </div>
       </div>
     </div>
   );

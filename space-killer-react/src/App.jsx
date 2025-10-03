@@ -6,21 +6,6 @@ import { GameBoard } from './components/GameBoard.jsx';
 import { KeyboardControls, OnScreenControls } from './components/GameControls.jsx';
 import { LEVEL_CLEAR_TICK_MS } from './game/constants.js';
 
-function StatusBanner({ status }) {
-  if (status.gameOver) {
-    return <p className="status-banner status-banner--danger">Game Over</p>;
-  }
-  if (status.levelCleared) {
-    return <p className="status-banner status-banner--success">Level Cleared</p>;
-  }
-  if (status.playerDied) {
-    return <p className="status-banner status-banner--warning">Ship Destroyed</p>;
-  }
-  if (status.paused) {
-    return <p className="status-banner">Paused</p>;
-  }
-  return null;
-}
 
 function GameOverModal({ score, level, highScores = [], lastScoreId, onRestart }) {
   const entries = Array.isArray(highScores) ? highScores : [];
@@ -105,7 +90,6 @@ function GameShell() {
         <h1>Space Killer React</h1>
         <p>A modern React port of the Pascal classic.</p>
         <div className="header-controls">
-          <StatusBanner status={status} />
           <button
             type="button"
             className={`control-button music-toggle ${musicEnabled ? 'is-active' : ''}`}
@@ -135,7 +119,12 @@ function GameShell() {
         {boss ? <p>Boss lives: {boss.lives}</p> : null}
       </section>
       <main className="app-main">
-        <GameBoard />
+        <div className="board-stage">
+          <GameBoard />
+          {status.paused && !status.gameOver && !status.playerDied ? (
+            <div className="board-overlay" aria-hidden="true">Paused</div>
+          ) : null}
+        </div>
         <OnScreenControls />
       </main>
     </div>
