@@ -1,0 +1,330 @@
+import { describe, expect, it, vi } from 'vitest';
+import { produce } from 'immer';
+import { createInitialState, gameReducer } from './state.js';
+import {
+  ACTIONS,
+  CELL_TYPES,
+  INITIAL_WAIT_TIME,
+  MAX_CONCURRENT_SHOTS,
+  PLAYER_RELOAD_TICKS,
+  BOSS_INITIAL_LIVES,
+  BOSS_LEVEL,
+  BOSS_TELEPORT_COOLDOWN,
+} from './constants.js';
+
+
+import { buildLevelLayout } from './board.js';
+import { moveBossDiagonalBullets, moveEnemyBullets } from './engine/projectiles.js';
+import { updateBoss } from './engine/boss.js';
+import { killEnemy } from './engine/enemy.js';
+
+const hasCellOfType = (board, type) =>
+  board.some((row) => row.some((cell) => cell.type === type));
+
+describe('player actions', () => {
+  it('moves the player immediately when a left move is requested', () => {
+    const initial = createInitialState();
+    const startRow = initial.player.row;
+    const startCol = initial.player.col;
+
+    const moved = gameReducer(initial, { type: ACTIONS.QUEUE_MOVE_LEFT });
+
+    expect(moved.player.row).toBe(startRow);
+    expect(moved.player.col).toBe(startCol - 1);
+    expect(moved.board[startRow][startCol - 1].type).toBe(CELL_TYPES.PLAYER);
+    expect(moved.board[startRow][startCol].type).toBe(CELL_TYPES.EMPTY);
+    expect(moved.queuedInput.move).toBeNull();
+
+    const afterTick = gameReducer(moved, { type: ACTIONS.TICK });
+    expect(afterTick.player.col).toBe(startCol - 1);
+  });
+
+  it('ignores movement input while the game is paused', () => {
+    const initial = createInitialState();
+    const paused = gameReducer(initial, { type: ACTIONS.PAUSE_TOGGLE });
+
+    const attempted = gameReducer(paused, { type: ACTIONS.QUEUE_MOVE_LEFT });
+
+    expect(attempted).toBe(paused);
+  });
+
+  it('fires immediately, consuming ammo and recording an event', () => {
+    const initial = createInitialState();
+
+    const fired = gameReducer(initial, { type: ACTIONS.QUEUE_SHOT });
+
+    expect(fired.ammo.remainingShots).toBe(initial.ammo.remainingShots - 1);
+    expect(hasCellOfType(fired.board, CELL_TYPES.PLAYER_BULLET)).toBe(true);
+    expect(fired.queuedInput.fire).toBe(false);
+    expect(fired.events).toEqual(['player-fired']);
+
+    const afterTick = gameReducer(fired, { type: ACTIONS.TICK });
+    expect(afterTick.events.includes('player-fired')).toBe(false);
+  });
+  it('enforces a cooldown after expending the full burst', () => {
+    let state = createInitialState();
+
+    for (let i = 0; i < MAX_CONCURRENT_SHOTS; i += 1) {
+      state = gameReducer(state, { type: ACTIONS.QUEUE_SHOT });
+      state = gameReducer(state, { type: ACTIONS.TICK });
+    }
+
+    expect(state.ammo.remainingShots).toBe(0);
+    expect(state.ammo.cooldownTicks).toBe(Math.max(PLAYER_RELOAD_TICKS - 1, 0));
+
+    const blocked = gameReducer(state, { type: ACTIONS.QUEUE_SHOT });
+    expect(blocked.ammo.remainingShots).toBe(0);
+    expect(blocked.ammo.cooldownTicks).toBe(state.ammo.cooldownTicks);
+
+    let recovered = blocked;
+    const ticksToRecover = blocked.ammo.cooldownTicks;
+    for (let i = 0; i < ticksToRecover; i += 1) {
+      recovered = gameReducer(recovered, { type: ACTIONS.TICK });
+    }
+
+    expect(recovered.ammo.cooldownTicks).toBe(0);
+    expect(recovered.ammo.remainingShots).toBe(MAX_CONCURRENT_SHOTS);
+
+    const afterCooldownShot = gameReducer(recovered, { type: ACTIONS.QUEUE_SHOT });
+    expect(afterCooldownShot.ammo.remainingShots).toBe(MAX_CONCURRENT_SHOTS - 1);
+  });
+
+});
+
+describe('player bullets vs enemy bullets', () => {
+  it('creates a combined projectile when firing into an enemy bullet', () => {
+    const initial = produce(createInitialState(), (draft) => {
+      const { row, col } = draft.player;
+      draft.board[row - 1][col].type = CELL_TYPES.ENEMY_BULLET;
+    });
+
+    const fired = gameReducer(initial, { type: ACTIONS.QUEUE_SHOT });
+
+    expect(fired.board[fired.player.row - 1][fired.player.col].type)
+      .toBe(CELL_TYPES.BOTH_BULLETS);
+    expect(hasCellOfType(fired.board, CELL_TYPES.BOTH_BULLETS)).toBe(true);
+    expect(fired.ammo.remainingShots).toBe(initial.ammo.remainingShots - 1);
+  });
+
+  it('preserves ammo and state when mid-air bullets collide', () => {
+    let state = createInitialState();
+    state = gameReducer(state, { type: ACTIONS.QUEUE_SHOT });
+    state = gameReducer(state, { type: ACTIONS.TICK });
+
+    state = produce(state, (draft) => {
+      const { col } = draft.player;
+      const bulletRow = draft.player.row - 2;
+      draft.board[bulletRow - 1][col].type = CELL_TYPES.ENEMY_BULLET;
+    });
+
+    const beforeShots = state.ammo.remainingShots;
+    state = gameReducer(state, { type: ACTIONS.TICK });
+
+    const combinedExists = hasCellOfType(state.board, CELL_TYPES.BOTH_BULLETS);
+    const playerBulletExists = hasCellOfType(state.board, CELL_TYPES.PLAYER_BULLET);
+    expect(combinedExists || playerBulletExists).toBe(true);
+    expect(state.ammo.remainingShots).toBe(beforeShots);
+  });
+});
+
+
+
+describe('boss level', () => {
+  const createBossState = () => produce(createInitialState(), (draft) => {
+    const layout = buildLevelLayout(BOSS_LEVEL);
+    draft.board = layout.board;
+    draft.enemies = layout.enemies;
+    draft.player = layout.player;
+    draft.boss = layout.boss;
+    draft.metrics.level = BOSS_LEVEL;
+  });
+
+  it('places the boss for the designated level', () => {
+    const layout = buildLevelLayout(BOSS_LEVEL);
+    expect(layout.enemies).toBe(1);
+    expect(layout.boss).not.toBeNull();
+    expect(layout.boss?.lives).toBe(BOSS_INITIAL_LIVES);
+    expect(layout.board[layout.boss.row][layout.boss.col].type).toBe(CELL_TYPES.BOSS);
+  });
+
+  it('reduces boss lives without removing it until defeated', () => {
+    let state = createBossState();
+    const { row, col } = state.boss;
+
+    state = produce(state, (draft) => {
+      draft.events = [];
+      killEnemy(draft, row, col);
+    });
+
+    expect(state.boss?.lives).toBe(BOSS_INITIAL_LIVES - 1);
+    expect(state.board[row][col].type).toBe(CELL_TYPES.BOSS);
+    expect(state.enemies).toBe(1);
+    expect(state.events).toContain('boss-hit');
+
+    for (let i = 1; i < BOSS_INITIAL_LIVES; i += 1) {
+      state = produce(state, (draft) => {
+        draft.events = [];
+        killEnemy(draft, row, col);
+      });
+    }
+
+    expect(state.boss).toBeNull();
+    expect(state.enemies).toBe(0);
+    expect(state.board[row][col].type).toBe(CELL_TYPES.EMPTY);
+    expect(state.events).toContain('boss-defeated');
+  });
+
+
+
+  it('does not refund burst shots when a diagonal erases a player bullet', () => {
+    let state = createBossState();
+    state = produce(state, (draft) => {
+      draft.ammo.remainingShots = 2;
+      draft.ammo.cooldownTicks = 0;
+      for (let r = 1; r < draft.board.length - 1; r += 1) {
+        for (let c = 1; c < draft.board[r].length - 1; c += 1) {
+          draft.board[r][c].type = CELL_TYPES.EMPTY;
+          draft.board[r][c].blocked = false;
+          draft.board[r][c].occupantId = null;
+        }
+      }
+      const diagRow = 4;
+      const diagCol = 4;
+      draft.board[diagRow][diagCol].type = CELL_TYPES.BOSS_DIAGONAL_BULLET;
+      draft.board[diagRow][diagCol].blocked = false;
+      draft.board[diagRow][diagCol].occupantId = 'right';
+      draft.board[diagRow + 1][diagCol + 1].type = CELL_TYPES.PLAYER_BULLET;
+      draft.board[diagRow + 1][diagCol + 1].blocked = false;
+    });
+
+    state = produce(state, (draft) => {
+      moveBossDiagonalBullets(draft);
+    });
+
+    expect(state.ammo.remainingShots).toBe(2);
+    expect(state.ammo.cooldownTicks).toBe(0);
+    expect(state.board[5][5].type).toBe(CELL_TYPES.EMPTY);
+  });
+
+  it('creates a combined bullet when diagonal intersects a vertical shot and continues trajectory', () => {
+    const enemyRow = 6;
+    const enemyCol = 7;
+
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.8);
+
+    let state = createBossState();
+    state = produce(state, (draft) => {
+      for (let r = 1; r < draft.board.length - 1; r += 1) {
+        for (let c = 1; c < draft.board[r].length - 1; c += 1) {
+          draft.board[r][c].type = CELL_TYPES.EMPTY;
+          draft.board[r][c].blocked = false;
+          draft.board[r][c].occupantId = null;
+        }
+      }
+      const verticalCell = draft.board[enemyRow][enemyCol];
+      verticalCell.type = CELL_TYPES.ENEMY_BULLET;
+      verticalCell.blocked = false;
+      const diagonalCell = draft.board[enemyRow - 1][enemyCol - 1];
+      diagonalCell.type = CELL_TYPES.BOSS_DIAGONAL_BULLET;
+      diagonalCell.blocked = false;
+      diagonalCell.occupantId = 'right';
+    });
+
+    state = produce(state, (draft) => {
+      moveBossDiagonalBullets(draft);
+    });
+
+    expect(state.board[enemyRow][enemyCol].type).toBe(CELL_TYPES.BOSS_COMBINED_BULLET);
+    expect(['left', 'right']).toContain(state.board[enemyRow][enemyCol].occupantId);
+
+    state = produce(state, (draft) => {
+      moveEnemyBullets(draft);
+    });
+
+    const diagonalContinued = state.board.some((boardRow, rIndex) =>
+      boardRow.some((cell, cIndex) => cell.type === CELL_TYPES.BOSS_DIAGONAL_BULLET && rIndex >= enemyRow)
+    );
+
+    expect(diagonalContinued).toBe(true);
+    randomSpy.mockRestore();
+  });
+
+  it('fires vertical and diagonal shots together', () => {
+    let state = createBossState();
+    state = produce(state, (draft) => {
+      draft.boss.fireCooldown = 0;
+      draft.boss.moveCooldown = 0;
+      draft.boss.teleportCooldown = BOSS_TELEPORT_COOLDOWN;
+      draft.boss.horizontalDirection = 'right';
+      draft.boss.verticalDirection = 'down';
+      draft.events = [];
+    });
+
+    state = produce(state, (draft) => {
+      updateBoss(draft);
+    });
+
+    const { row, col } = state.boss;
+    const verticalCell = state.board[row + 1][col];
+    expect(verticalCell.type).toBe(CELL_TYPES.ENEMY_BULLET);
+
+    const diagonalShots = [];
+    state.board.forEach((boardRow, rIndex) => {
+      boardRow.forEach((cell, cIndex) => {
+        if (cell.type === CELL_TYPES.BOSS_DIAGONAL_BULLET) {
+          diagonalShots.push({ row: rIndex, col: cIndex, direction: cell.occupantId });
+        }
+      });
+    });
+
+    expect(diagonalShots).toHaveLength(1);
+    const shot = diagonalShots[0];
+    expect(shot.row).toBe(row + 1);
+    expect(Math.abs(shot.col - col)).toBe(1);
+    expect(['left', 'right']).toContain(shot.direction);
+
+    state = produce(state, (draft) => {
+      moveBossDiagonalBullets(draft);
+    });
+
+    const remainingDiagonal = state.board.flat().filter((cell) => cell.type === CELL_TYPES.BOSS_DIAGONAL_BULLET);
+    expect(remainingDiagonal.length).toBeLessThanOrEqual(1);
+  });
+});
+
+describe('level completion flow', () => {
+  it('animates the clear sequence, awards bonus, and prepares the next level', () => {
+    let state = produce(createInitialState(), (draft) => {
+      draft.board.forEach((row) => {
+        row.forEach((cell) => {
+          if (cell.type === CELL_TYPES.ENEMY) {
+            cell.type = CELL_TYPES.EMPTY;
+          }
+        });
+      });
+      draft.enemies = 0;
+    });
+
+    state = gameReducer(state, { type: ACTIONS.TICK });
+
+    expect(state.status.levelCleared).toBe(true);
+    expect(state.transition.mode).toBe('level-clear-rise');
+    expect(state.events).toContain('level-cleared');
+
+    let guard = 0;
+    while (state.transition.mode !== 'idle' && guard < 100) {
+      state = gameReducer(state, { type: ACTIONS.TICK });
+      guard += 1;
+    }
+
+    expect(guard).toBeLessThan(100);
+    expect(state.transition.mode).toBe('idle');
+    expect(state.status.levelCleared).toBe(false);
+    expect(state.metrics.level).toBe(2);
+    expect(state.metrics.currentScore).toBe(875);
+    expect(state.metrics.waitTime).toBe(Math.round(INITIAL_WAIT_TIME * 0.95));
+    expect(state.player).not.toBeNull();
+    expect(state.ammo.remainingShots).toBe(MAX_CONCURRENT_SHOTS);
+    expect(state.events).toContain('level-start');
+  });
+});
