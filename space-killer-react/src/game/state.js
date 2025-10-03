@@ -114,6 +114,13 @@ export const createInitialState = () => {
       level: 1,
       currentScore: 0,
       waitTime: INITIAL_WAIT_TIME,
+      killStreak: 0,
+      bestKillStreak: 0,
+      levelBestKillStreak: 0,
+      totalShotsFired: 0,
+      totalShotsHit: 0,
+      levelStartShotsFired: 0,
+      levelStartShotsHit: 0,
     },
     ammo: {
       remainingShots: MAX_CONCURRENT_SHOTS,

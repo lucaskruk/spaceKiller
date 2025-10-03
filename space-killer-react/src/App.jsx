@@ -124,6 +124,9 @@ function GameShell() {
     setHighScoreName(id, value);
   }, [setHighScoreName]);
 
+  const storedHighScore = Array.isArray(highScores) && highScores.length ? highScores[0].score : 0;
+  const highestScore = Math.max(Number(storedHighScore ?? 0), Number(metrics.currentScore ?? 0));
+
   const { musicEnabled, toggleMusic } = useAudioManager(events);
   const isTransitioning = Boolean(transition && transition.mode !== 'idle');
   const isLevelClearTransition = transition?.mode === 'level-clear-rise' || transition?.mode === 'level-clear-fill';
@@ -172,6 +175,10 @@ function GameShell() {
             <div className="hud-item">
               <span className="hud-label">Score</span>
               <span className="hud-value hud-value--mono">{metrics.currentScore.toLocaleString()}</span>
+            </div>
+            <div className="hud-item">
+              <span className="hud-label">High Score</span>
+              <span className="hud-value hud-value--mono">{highestScore.toLocaleString()}</span>
             </div>
             {boss ? (
               <div className="hud-item hud-item--boss">

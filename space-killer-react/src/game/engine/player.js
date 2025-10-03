@@ -11,6 +11,9 @@ export const hitPlayer = (draft, row, col) => {
   clearCell(draft.board, row, col);
   draft.metrics.lives -= 1;
   draft.metrics.currentScore -= 200;
+  if (draft.metrics) {
+    draft.metrics.killStreak = 0;
+  }
   draft.status.playerDied = true;
   if (draft.ammo) {
     draft.ammo.remainingShots = MAX_CONCURRENT_SHOTS;
@@ -18,6 +21,14 @@ export const hitPlayer = (draft, row, col) => {
   }
   draft.player = null;
   draft.events.push('player-hit');
+};
+
+const registerShotFired = (draft) => {
+  if (!draft?.metrics) {
+    return;
+  }
+  const metrics = draft.metrics;
+  metrics.totalShotsFired = (metrics.totalShotsFired ?? 0) + 1;
 };
 
 const consumePlayerShot = (draft) => {
@@ -80,6 +91,7 @@ const applyPlayerFire = (draft) => {
     drawPlayerBullet(draft.board, row - 1, col);
     consumePlayerShot(draft);
     draft.events.push('player-fired');
+    registerShotFired(draft);
     return true;
   }
 
@@ -88,11 +100,13 @@ const applyPlayerFire = (draft) => {
     drawBothBullets(draft.board, row - 1, col);
     consumePlayerShot(draft);
     draft.events.push('player-fired');
+    registerShotFired(draft);
     return true;
   }
 
   if (aboveCell.type === CELL_TYPES.ENEMY) {
     draft.events = [];
+    registerShotFired(draft);
     killEnemy(draft, row - 1, col);
     return true;
   }

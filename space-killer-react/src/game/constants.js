@@ -18,6 +18,18 @@ export const LAST_LEVEL = 10;
 export const BOSS_LEVEL = 10;
 export const BOSS_INITIAL_LIVES = 5;
 export const BOSS_HIT_SCORE = 250;
+export const ENEMY_DESTROY_SCORE = 100;
+export const ENEMY_STREAK_BONUS_STEP = 20;
+export const ENEMY_STREAK_BONUS_CAP = 200;
+export const ACCURACY_BONUS_THRESHOLDS = Object.freeze([
+  { threshold: 0.9, bonus: 75 },
+  { threshold: 0.75, bonus: 35 },
+]);
+export const LEVEL_ACCURACY_BONUS_THRESHOLDS = Object.freeze([
+  { threshold: 0.9, bonus: 300 },
+  { threshold: 0.75, bonus: 150 },
+]);
+export const LEVEL_STREAK_BONUS_VALUE = 50;
 export const BOSS_FIRE_COOLDOWN = 4;
 export const BOSS_MOVE_COOLDOWN = 2;
 export const BOSS_TELEPORT_COOLDOWN = 10;

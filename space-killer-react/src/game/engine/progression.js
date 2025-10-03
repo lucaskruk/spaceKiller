@@ -6,6 +6,8 @@
   SPEED_MULTIPLIER,
   LEVEL_BONUS_PER_LEVEL,
   LEVEL_BONUS_PER_LIFE,
+  LEVEL_ACCURACY_BONUS_THRESHOLDS,
+  LEVEL_STREAK_BONUS_VALUE,
 } from '../constants.js';
 import { buildLevelLayout } from '../board.js';
 import { clearCell, fillRowWithFiller, moveCell } from './grid.js';
@@ -17,8 +19,35 @@ const accelerateGame = (draft) => {
   );
 };
 
-const calculateLevelBonus = (level, lives) =>
-  (level * LEVEL_BONUS_PER_LEVEL) + (Math.max(0, lives) * LEVEL_BONUS_PER_LIFE);
+const calculateLevelSkillBonus = (metrics) => {
+  if (!metrics) {
+    return 0;
+  }
+  const totalShotsFired = metrics.totalShotsFired ?? 0;
+  const totalShotsHit = metrics.totalShotsHit ?? 0;
+  const levelStartShotsFired = metrics.levelStartShotsFired ?? 0;
+  const levelStartShotsHit = metrics.levelStartShotsHit ?? 0;
+  const shotsFiredThisLevel = Math.max(0, totalShotsFired - levelStartShotsFired);
+  const shotsHitThisLevel = Math.max(0, totalShotsHit - levelStartShotsHit);
+  const accuracy = shotsFiredThisLevel > 0 ? Math.min(1, shotsHitThisLevel / shotsFiredThisLevel) : 0;
+  let accuracyBonus = 0;
+  for (const { threshold, bonus } of LEVEL_ACCURACY_BONUS_THRESHOLDS) {
+    if (accuracy >= threshold) {
+      accuracyBonus = bonus;
+      break;
+    }
+  }
+  const streakBonus = Math.max(0, metrics.levelBestKillStreak ?? 0) * LEVEL_STREAK_BONUS_VALUE;
+  return accuracyBonus + streakBonus;
+};
+
+const calculateLevelBonus = (metrics) => {
+  if (!metrics) {
+    return 0;
+  }
+  const base = (metrics.level * LEVEL_BONUS_PER_LEVEL) + (Math.max(0, metrics.lives) * LEVEL_BONUS_PER_LIFE);
+  return base + calculateLevelSkillBonus(metrics);
+};
 
 export const resetTransition = (draft) => {
   if (!draft.transition) {
@@ -41,6 +70,12 @@ export const applyLevelLayout = (draft) => {
   draft.enemies = enemies;
   draft.player = player;
   draft.boss = boss;
+  if (draft.metrics) {
+    draft.metrics.killStreak = 0;
+    draft.metrics.levelBestKillStreak = 0;
+    draft.metrics.levelStartShotsFired = draft.metrics.totalShotsFired ?? 0;
+    draft.metrics.levelStartShotsHit = draft.metrics.totalShotsHit ?? 0;
+  }
   if (shouldCarryBossLives && draft.boss) {
     draft.boss.lives = Math.min(draft.boss.lives, preservedBossLives);
   }
@@ -56,7 +91,7 @@ export const applyLevelLayout = (draft) => {
 export const advanceToNextLevel = (draft, { awardBonus } = {}) => {
   const completedLevel = draft.metrics.level;
   if (awardBonus) {
-    const bonus = calculateLevelBonus(completedLevel, draft.metrics.lives);
+    const bonus = calculateLevelBonus(draft.metrics);
     draft.metrics.currentScore += bonus;
     draft.events.push('level-bonus');
   }
