@@ -43,7 +43,7 @@ export const HIGH_SCORE_NAME_MAX_LENGTH = 12;
 export const SOUND_SOURCES = {
   music: {
     src: ['/audio/main_song.mp3'],
-    options: { loop: true, volume: 0.2 },
+    options: { loop: true, volume: 0.15 },
   },
   playerShot: {
     src: ['/audio/playershot.wav'],
@@ -55,7 +55,7 @@ export const SOUND_SOURCES = {
   },
   enemyExplode: {
     src: ['/audio/enemy_explode.wav'],
-    options: { volume: 0.65 },
+    options: { volume: 0.55 },
   },
   winLevel: {
     src: ['/audio/win_level.ogg'],
