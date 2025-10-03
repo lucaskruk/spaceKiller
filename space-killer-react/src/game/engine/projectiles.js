@@ -32,7 +32,6 @@ const spawnDiagonalContinuation = (draft, originRow, originCol, directionHint) =
   }
   if (target.type === CELL_TYPES.PLAYER_BULLET) {
     clearCell(draft.board, nextRow, nextCol);
-    draft.ammo.remainingShots += 1;
     return;
   }
   if (target.type === CELL_TYPES.PLAYER) {
@@ -125,7 +124,6 @@ export const movePlayerBullets = (draft) => {
     if (row > 1) {
       const aboveCell = getCell(draft.board, row - 1, col);
       if (!aboveCell) {
-        draft.ammo.remainingShots += 1;
         return;
       }
 
@@ -136,10 +134,8 @@ export const movePlayerBullets = (draft) => {
       } else if (aboveCell.type === CELL_TYPES.EMPTY) {
         drawPlayerBullet(draft.board, row - 1, col);
       } else {
-        draft.ammo.remainingShots += 1;
       }
     } else {
-      draft.ammo.remainingShots += 1;
     }
   });
 };
@@ -161,7 +157,6 @@ export const moveBothBullets = (draft) => {
     if (row > 1) {
       const aboveCell = getCell(draft.board, row - 1, col);
       if (!aboveCell) {
-        draft.ammo.remainingShots += 1;
       } else if (aboveCell.type === CELL_TYPES.ENEMY_BULLET || aboveCell.type === CELL_TYPES.BOSS_DIAGONAL_BULLET) {
         drawBothBullets(draft.board, row - 1, col);
       } else if (aboveCell.type === CELL_TYPES.ENEMY || aboveCell.type === CELL_TYPES.BOSS) {
@@ -169,10 +164,8 @@ export const moveBothBullets = (draft) => {
       } else if (aboveCell.type === CELL_TYPES.EMPTY) {
         drawPlayerBullet(draft.board, row - 1, col);
       } else {
-        draft.ammo.remainingShots += 1;
       }
     } else {
-      draft.ammo.remainingShots += 1;
     }
 
     if (row < BOARD_ROWS - 2) {
@@ -229,7 +222,6 @@ export const moveBossDiagonalBullets = (draft) => {
 
     if (target.type === CELL_TYPES.PLAYER_BULLET) {
       clearCell(draft.board, nextRow, nextCol);
-      draft.ammo.remainingShots += 1;
       return;
     }
 

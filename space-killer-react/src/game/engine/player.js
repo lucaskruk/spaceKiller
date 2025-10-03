@@ -1,5 +1,4 @@
-
-import { CELL_TYPES, MAX_CONCURRENT_SHOTS } from '../constants.js';
+import { CELL_TYPES, MAX_CONCURRENT_SHOTS, PLAYER_RELOAD_TICKS } from '../constants.js';
 import { clearCell, drawBothBullets, drawPlayerBullet, getCell, moveCell } from './grid.js';
 import { killEnemy } from './enemy.js';
 import { isPlayable } from './status.js';
@@ -13,9 +12,23 @@ export const hitPlayer = (draft, row, col) => {
   draft.metrics.lives -= 1;
   draft.metrics.currentScore -= 200;
   draft.status.playerDied = true;
-  draft.ammo.remainingShots = MAX_CONCURRENT_SHOTS;
+  if (draft.ammo) {
+    draft.ammo.remainingShots = MAX_CONCURRENT_SHOTS;
+    draft.ammo.cooldownTicks = 0;
+  }
   draft.player = null;
   draft.events.push('player-hit');
+};
+
+const consumePlayerShot = (draft) => {
+  if (!draft.ammo) {
+    return;
+  }
+  draft.ammo.remainingShots = Math.max(0, (draft.ammo.remainingShots ?? 0) - 1);
+  if (draft.ammo.remainingShots <= 0) {
+    draft.ammo.remainingShots = 0;
+    draft.ammo.cooldownTicks = PLAYER_RELOAD_TICKS;
+  }
 };
 
 const applyPlayerMove = (draft, direction) => {
@@ -46,7 +59,10 @@ const applyPlayerMove = (draft, direction) => {
 export const performPlayerMove = (draft, direction) => applyPlayerMove(draft, direction);
 
 const applyPlayerFire = (draft) => {
-  if (!isPlayable(draft) || !draft.player) {
+  if (!isPlayable(draft) || !draft.player || !draft.ammo) {
+    return false;
+  }
+  if (draft.ammo.cooldownTicks > 0) {
     return false;
   }
   if (draft.ammo.remainingShots <= 0) {
@@ -62,7 +78,7 @@ const applyPlayerFire = (draft) => {
   if (aboveCell.type === CELL_TYPES.EMPTY) {
     draft.events = [];
     drawPlayerBullet(draft.board, row - 1, col);
-    draft.ammo.remainingShots = Math.max(0, draft.ammo.remainingShots - 1);
+    consumePlayerShot(draft);
     draft.events.push('player-fired');
     return true;
   }
@@ -70,7 +86,7 @@ const applyPlayerFire = (draft) => {
   if (aboveCell.type === CELL_TYPES.ENEMY_BULLET) {
     draft.events = [];
     drawBothBullets(draft.board, row - 1, col);
-    draft.ammo.remainingShots = Math.max(0, draft.ammo.remainingShots - 1);
+    consumePlayerShot(draft);
     draft.events.push('player-fired');
     return true;
   }
@@ -99,4 +115,17 @@ export const queuePlayerFire = (draft) => {
     return;
   }
   applyPlayerFire(draft);
+};
+
+export const tickPlayerAmmo = (draft) => {
+  if (!draft?.ammo) {
+    return;
+  }
+  if (draft.ammo.cooldownTicks > 0) {
+    draft.ammo.cooldownTicks -= 1;
+    if (draft.ammo.cooldownTicks <= 0) {
+      draft.ammo.cooldownTicks = 0;
+      draft.ammo.remainingShots = MAX_CONCURRENT_SHOTS;
+    }
+  }
 };

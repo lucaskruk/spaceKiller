@@ -114,6 +114,7 @@ export const createInitialState = () => {
     },
     ammo: {
       remainingShots: MAX_CONCURRENT_SHOTS,
+      cooldownTicks: 0,
     },
     queuedInput: {
       move: null,

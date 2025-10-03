@@ -22,7 +22,6 @@ export const killEnemy = (draft, row, col) => {
       draft.enemies = Math.max(0, draft.enemies - 1);
       draft.boss = null;
       draft.events.push('boss-defeated');
-      draft.ammo.remainingShots += 1;
     }
     return;
   }
@@ -30,7 +29,6 @@ export const killEnemy = (draft, row, col) => {
   clearCell(draft.board, row, col);
   draft.enemies = Math.max(0, draft.enemies - 1);
   draft.metrics.currentScore += 100;
-  draft.ammo.remainingShots += 1;
   draft.events.push('enemy-explosion');
 };
 

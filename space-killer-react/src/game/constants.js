@@ -20,10 +20,11 @@ export const BOSS_INITIAL_LIVES = 5;
 export const BOSS_HIT_SCORE = 250;
 export const BOSS_FIRE_COOLDOWN = 4;
 export const BOSS_MOVE_COOLDOWN = 2;
-export const BOSS_TELEPORT_COOLDOWN = 6;
+export const BOSS_TELEPORT_COOLDOWN = 10;
 export const BOSS_TELEPORT_CHANCE = 0.12;
 export const LEVEL_CLEAR_TICK_MS = 200;
 export const MAX_CONCURRENT_SHOTS = 7;
+export const PLAYER_RELOAD_TICKS = 4;
 export const HIGH_SCORE_LIMIT = 10;
 
 export const CELL_TYPES = {

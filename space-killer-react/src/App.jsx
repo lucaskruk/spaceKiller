@@ -118,7 +118,8 @@ function GameShell() {
         <p>Lives: {metrics.lives}</p>
         <p>Score: {metrics.currentScore}</p>
         <p>Enemies remaining: {enemies}</p>
-        <p>Shots remaining: {ammo.remainingShots}</p>
+        <p>Shots before cooldown: {ammo.remainingShots}</p>
+        <p>Cooldown ticks: {ammo.cooldownTicks}</p>
         <p>Tick speed: {metrics.waitTime}ms</p>
         {boss ? <p>Boss lives: {boss.lives}</p> : null}
       </section>

@@ -1,6 +1,7 @@
 import {
   LAST_LEVEL,
   MAX_CONCURRENT_SHOTS,
+  BOSS_LEVEL,
 } from '../constants.js';
 import { buildLevelLayout } from '../board.js';
 import { clearCell, fillRowWithFiller, moveCell } from './grid.js';
@@ -31,14 +32,23 @@ export const resetTransition = (draft) => {
 
 export const applyLevelLayout = (draft) => {
   const level = draft.metrics?.level ?? 1;
+  const shouldCarryBossLives = level === BOSS_LEVEL
+    && draft.status?.playerDied
+    && draft.boss
+    && typeof draft.boss.lives === 'number';
+  const preservedBossLives = shouldCarryBossLives ? draft.boss.lives : null;
   const { board, enemies, player, boss } = buildLevelLayout(level);
   draft.board = board;
   draft.enemies = enemies;
   draft.player = player;
   draft.boss = boss;
+  if (shouldCarryBossLives && draft.boss) {
+    draft.boss.lives = Math.min(draft.boss.lives, preservedBossLives);
+  }
   draft.status.playerDied = false;
   draft.status.levelCleared = false;
   draft.ammo.remainingShots = MAX_CONCURRENT_SHOTS;
+  draft.ammo.cooldownTicks = 0;
   draft.queuedInput.move = null;
   draft.queuedInput.fire = false;
   resetTransition(draft);

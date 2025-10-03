@@ -9,6 +9,7 @@ import {
   CELL_TYPES,
   INITIAL_WAIT_TIME,
   MAX_CONCURRENT_SHOTS,
+  PLAYER_RELOAD_TICKS,
   BOSS_INITIAL_LIVES,
   BOSS_LEVEL,
   BOSS_TELEPORT_COOLDOWN,
@@ -63,6 +64,34 @@ describe('player actions', () => {
     const afterTick = gameReducer(fired, { type: ACTIONS.TICK });
     expect(afterTick.events.includes('player-fired')).toBe(false);
   });
+  it('enforces a cooldown after expending the full burst', () => {
+    let state = createInitialState();
+
+    for (let i = 0; i < MAX_CONCURRENT_SHOTS; i += 1) {
+      state = gameReducer(state, { type: ACTIONS.QUEUE_SHOT });
+      state = gameReducer(state, { type: ACTIONS.TICK });
+    }
+
+    expect(state.ammo.remainingShots).toBe(0);
+    expect(state.ammo.cooldownTicks).toBe(Math.max(PLAYER_RELOAD_TICKS - 1, 0));
+
+    const blocked = gameReducer(state, { type: ACTIONS.QUEUE_SHOT });
+    expect(blocked.ammo.remainingShots).toBe(0);
+    expect(blocked.ammo.cooldownTicks).toBe(state.ammo.cooldownTicks);
+
+    let recovered = blocked;
+    const ticksToRecover = blocked.ammo.cooldownTicks;
+    for (let i = 0; i < ticksToRecover; i += 1) {
+      recovered = gameReducer(recovered, { type: ACTIONS.TICK });
+    }
+
+    expect(recovered.ammo.cooldownTicks).toBe(0);
+    expect(recovered.ammo.remainingShots).toBe(MAX_CONCURRENT_SHOTS);
+
+    const afterCooldownShot = gameReducer(recovered, { type: ACTIONS.QUEUE_SHOT });
+    expect(afterCooldownShot.ammo.remainingShots).toBe(MAX_CONCURRENT_SHOTS - 1);
+  });
+
 });
 
 describe('player bullets vs enemy bullets', () => {
@@ -150,10 +179,11 @@ describe('boss level', () => {
 
 
 
-  it('refunds ammo when diagonal bullets destroy player shots', () => {
+  it('does not refund burst shots when a diagonal erases a player bullet', () => {
     let state = createBossState();
     state = produce(state, (draft) => {
       draft.ammo.remainingShots = 2;
+      draft.ammo.cooldownTicks = 0;
       for (let r = 1; r < draft.board.length - 1; r += 1) {
         for (let c = 1; c < draft.board[r].length - 1; c += 1) {
           draft.board[r][c].type = CELL_TYPES.EMPTY;
@@ -174,7 +204,8 @@ describe('boss level', () => {
       moveBossDiagonalBullets(draft);
     });
 
-    expect(state.ammo.remainingShots).toBe(3);
+    expect(state.ammo.remainingShots).toBe(2);
+    expect(state.ammo.cooldownTicks).toBe(0);
     expect(state.board[5][5].type).toBe(CELL_TYPES.EMPTY);
   });
 

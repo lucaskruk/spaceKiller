@@ -3,7 +3,7 @@ import { moveBothBullets, moveBossDiagonalBullets, moveEnemyBullets, movePlayerB
 import { checkGameMilestones, applyLevelLayout, advanceToNextLevel, runLevelClearTransition } from './progression.js';
 import { moveEnemies } from './enemy.js';
 import { updateBoss } from './boss.js';
-import { queuePlayerFire, queuePlayerMove } from './player.js';
+import { queuePlayerFire, queuePlayerMove, tickPlayerAmmo } from './player.js';
 import { isPlayable } from './status.js';
 
 export const advanceGame = (state) => {
@@ -20,6 +20,7 @@ export const advanceGame = (state) => {
 
   return produce(state, (draft) => {
     draft.events = [];
+    tickPlayerAmmo(draft);
     queuePlayerMove(draft);
     queuePlayerFire(draft);
     moveEnemyBullets(draft);
