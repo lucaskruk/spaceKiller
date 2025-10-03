@@ -88,7 +88,6 @@ function GameShell() {
       )}
       <header className="app-header">
         <h1>Space Killer React</h1>
-        <p>A modern React port of the Pascal classic.</p>
         <div className="header-controls">
           <button
             type="button"
@@ -116,7 +115,22 @@ function GameShell() {
           </span>
         </p>
         <p>Score: {metrics.currentScore}</p>
-        {boss ? <p>Boss lives: {boss.lives}</p> : null}
+        {boss ? (
+          <p className="lives-display lives-display--boss">
+            <span className="lives-display__label">Boss:</span>
+            <span className="lives-display__icons" aria-hidden="true">
+              {Array.from({ length: Math.max(0, boss.lives ?? 0) }).map((_, index) => (
+                <img
+                  key={`boss-life-${index}`}
+                  src="/img/boss.png"
+                  alt=""
+                  className="life-icon life-icon--boss"
+                  draggable={false}
+                />
+              ))}
+            </span>
+          </p>
+        ) : null}
       </section>
       <main className="app-main">
         <div className="board-stage">
