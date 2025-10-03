@@ -67,6 +67,10 @@ button {
   width: 20px;
   height: 20px;
 }
+.lives-display--boss .lives-display__count {
+  color: rgba(226, 232, 240, 0.5);
+}
+
 .lives-display__icons {
   display: flex;
   gap: 0.25rem;
@@ -428,3 +432,25 @@ button {
     font-size: 1.6rem;
   }
 }
+
+.app-footer {
+  margin-top: 1rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.35);
+  display: grid;
+  gap: 0.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgba(226, 232, 240, 0.75);
+}
+
+.app-footer a {
+  color: #38bdf8;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
+}
+

@@ -129,6 +129,7 @@ function GameShell() {
                 />
               ))}
             </span>
+            <span className="lives-display__count">{boss.lives}</span>
           </p>
         ) : null}
       </section>
@@ -141,6 +142,10 @@ function GameShell() {
         </div>
         <OnScreenControls />
       </main>
+      <footer className="app-footer">
+        <p>Space Killer React is a modern reimagining of the classic arcade shooter.</p>
+        <p>Have feedback or want to contribute? visit <a href="https://github.com/lucaskruk/spaceKiller" target="_blank" rel="noreferrer">github repo</a>.</p>
+      </footer>
     </div>
   );
 }
