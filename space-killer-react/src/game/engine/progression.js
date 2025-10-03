@@ -76,6 +76,11 @@ export const applyLevelLayout = (draft) => {
     draft.metrics.levelStartShotsFired = draft.metrics.totalShotsFired ?? 0;
     draft.metrics.levelStartShotsHit = draft.metrics.totalShotsHit ?? 0;
   }
+  if (!draft.enemyBehavior || typeof draft.enemyBehavior !== 'object') {
+    draft.enemyBehavior = { evadeCooldown: 0 };
+  } else {
+    draft.enemyBehavior.evadeCooldown = 0;
+  }
   if (shouldCarryBossLives && draft.boss) {
     draft.boss.lives = Math.min(draft.boss.lives, preservedBossLives);
   }

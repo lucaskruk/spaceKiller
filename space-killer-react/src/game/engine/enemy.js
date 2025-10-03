@@ -4,6 +4,8 @@ import {
   CELL_TYPES,
   BOSS_HIT_SCORE,
   ENEMY_DESTROY_SCORE,
+  ENEMY_EVADE_COOLDOWN,
+  ENEMY_EVADE_RANGE,
   ENEMY_STREAK_BONUS_STEP,
   ENEMY_STREAK_BONUS_CAP,
   ACCURACY_BONUS_THRESHOLDS,
@@ -13,6 +15,69 @@ import { clearCell, collectCellsOfType, drawEnemyBullet, getCell, moveCell } fro
 
 const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const rollDice = () => randomInt(1, 6);
+
+const ensureEnemyBehavior = (draft) => {
+  if (!draft.enemyBehavior || typeof draft.enemyBehavior !== 'object') {
+    draft.enemyBehavior = { evadeCooldown: 0 };
+  }
+  if (typeof draft.enemyBehavior.evadeCooldown !== 'number') {
+    draft.enemyBehavior.evadeCooldown = 0;
+  }
+  return draft.enemyBehavior;
+};
+
+const collectPlayerThreats = (draft) => {
+  const directShots = collectCellsOfType(draft.board, CELL_TYPES.PLAYER_BULLET);
+  const combinedShots = collectCellsOfType(draft.board, CELL_TYPES.BOTH_BULLETS);
+  return [...directShots, ...combinedShots];
+};
+
+const attemptEnemyEvade = (draft, row, col, threats) => {
+  if (!Array.isArray(threats) || threats.length === 0) {
+    return { moved: false, threatened: false };
+  }
+  let threatened = false;
+  for (const threat of threats) {
+    if (!threat || typeof threat.row !== 'number' || typeof threat.col !== 'number') {
+      continue;
+    }
+    if (threat.row < row) {
+      continue;
+    }
+    if ((threat.row - row) > ENEMY_EVADE_RANGE) {
+      continue;
+    }
+    const colDiff = threat.col - col;
+    if (Math.abs(colDiff) > ENEMY_EVADE_RANGE) {
+      continue;
+    }
+    threatened = true;
+    const directions = colDiff >= 0 ? ['left', 'right'] : ['right', 'left'];
+    for (const direction of directions) {
+      if (direction === 'left' && col > 1) {
+        const target = getCell(draft.board, row, col - 1);
+        if (target && target.type === CELL_TYPES.EMPTY) {
+          moveCell(draft.board, row, col, row, col - 1);
+          return { moved: true, threatened: true };
+        }
+      } else if (direction === 'right' && col < BOARD_COLS - 1) {
+        const target = getCell(draft.board, row, col + 1);
+        if (target && target.type === CELL_TYPES.EMPTY) {
+          moveCell(draft.board, row, col, row, col + 1);
+          return { moved: true, threatened: true };
+        }
+      }
+    }
+    if (row > 1) {
+      const target = getCell(draft.board, row - 1, col);
+      if (target && target.type === CELL_TYPES.EMPTY) {
+        moveCell(draft.board, row, col, row - 1, col);
+        return { moved: true, threatened: true };
+      }
+    }
+  }
+  return { moved: false, threatened };
+};
 
 const applySkillBonuses = (draft, baseScore) => {
   if (!draft?.metrics) {
@@ -70,15 +135,33 @@ export const killEnemy = (draft, row, col) => {
   clearCell(draft.board, row, col);
   draft.enemies = Math.max(0, draft.enemies - 1);
   applySkillBonuses(draft, ENEMY_DESTROY_SCORE);
+  const behavior = ensureEnemyBehavior(draft);
   draft.events.push('enemy-explosion');
 };
 
 export const moveEnemies = (draft) => {
+  const behavior = ensureEnemyBehavior(draft);
+  if (behavior.evadeCooldown > 0) {
+    behavior.evadeCooldown -= 1;
+  }
+
+  const threats = behavior.evadeCooldown <= 0 ? collectPlayerThreats(draft) : null;
   const coords = collectCellsOfType(draft.board, CELL_TYPES.ENEMY);
+
   coords.forEach(({ row, col }) => {
     const cell = getCell(draft.board, row, col);
     if (!cell || cell.type !== CELL_TYPES.ENEMY) {
       return;
+    }
+
+    if (behavior.evadeCooldown <= 0) {
+      const result = attemptEnemyEvade(draft, row, col, threats);
+      if (result.threatened) {
+        behavior.evadeCooldown = ENEMY_EVADE_COOLDOWN;
+      }
+      if (result.moved) {
+        return;
+      }
     }
 
     const choice = rollDice();
@@ -142,3 +225,4 @@ export const moveEnemies = (draft) => {
     }
   });
 };
+
