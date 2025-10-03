@@ -138,7 +138,7 @@ export function OnScreenControls({ musicEnabled = false, toggleMusic }) {
           {musicLabel}
         </button>
       </div>
-      <div className="movement-controls">
+      <div className="movement-controls" aria-label="Movement controls">
         <div className="movement-controls__left">
           <button
             type="button"

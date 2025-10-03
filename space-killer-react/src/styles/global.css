@@ -134,7 +134,7 @@ button {
   vertical-align: middle;
   font-size: 12px;
   color: #e2e8f0;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: none;
   padding: 0;
 }
 
@@ -182,44 +182,6 @@ button {
   font-weight: 600;
 }
 
-.control-panel {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: center;
-}
-
-.primary-controls {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.movement-controls {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
-}
-
-.movement-controls__left {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.movement-controls__left .control-button {
-  font-size: 1.1rem;
-}
-
-.movement-controls__fire {
-  margin-left: auto;
-  display: flex;
-}
-
-.movement-controls__fire .control-button--fire {
-  font-size: 1.2rem;
-}
-
 .control-button {
   padding: 0.75rem 1rem;
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -229,6 +191,9 @@ button {
   text-transform: uppercase;
   font-size: 0.8rem;
   transition: transform 0.1s ease, background 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .control-button:disabled {
@@ -252,6 +217,43 @@ button {
 .control-button--fire {
   background: rgba(192, 38, 211, 0.45);
 }
+.control-panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.primary-controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.movement-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.movement-controls__left {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.movement-controls__fire {
+  margin-left: auto;
+  display: flex;
+}
+
+.movement-controls__fire .control-button--fire {
+  font-size: 1.2rem;
+}
+
+
 
 .music-toggle {
   min-width: 180px;
@@ -378,7 +380,7 @@ button {
   }
 
   body {
-    padding: 1rem;
+    padding: 4.5rem 1rem 1.5rem;
   }
 
   .app-shell {
@@ -386,12 +388,33 @@ button {
   }
 
   .control-panel {
+    width: 100%;
     gap: 1.5rem;
   }
 
   .primary-controls {
-    width: 100%;
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 999px;
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    gap: 0.5rem;
     justify-content: center;
+    pointer-events: none;
+    z-index: 600;
+  }
+
+  .primary-controls .control-button {
+    pointer-events: auto;
+    min-width: 72px;
+  }
+
+  .primary-controls .music-toggle {
+    min-width: auto;
   }
 
   .movement-controls {
@@ -411,21 +434,10 @@ button {
     pointer-events: auto;
   }
 
-  .movement-controls__left {
-    display: flex;
-    flex-direction: row;
-    gap: 0.75rem;
-  }
-
   .movement-controls__left .control-button {
     min-width: 68px;
     min-height: 68px;
     font-size: 1.5rem;
-  }
-
-  .movement-controls__fire {
-    display: flex;
-    justify-content: flex-end;
   }
 
   .movement-controls__fire .control-button--fire {
