@@ -68,7 +68,7 @@ export function KeyboardControls() {
   return null;
 }
 
-export function OnScreenControls() {
+export function OnScreenControls({ musicEnabled = false, toggleMusic }) {
   const repeatTimer = useRef(null);
   const { queueMoveLeft, queueMoveRight, queueShot, togglePause, reset } = useGameActions();
   const state = useGameState();
@@ -104,6 +104,14 @@ export function OnScreenControls() {
 
   const disabled = !inputEnabled;
 
+  const handleToggleMusic = useCallback(() => {
+    if (typeof toggleMusic === 'function') {
+      toggleMusic();
+    }
+  }, [toggleMusic]);
+  const musicDisabled = typeof toggleMusic !== 'function';
+  const musicLabel = musicEnabled ? 'Stop Music' : 'Play Music';
+
   return (
     <div className="control-panel">
       <div className="primary-controls">
@@ -120,6 +128,14 @@ export function OnScreenControls() {
           onClick={reset}
         >
           Reset
+        </button>
+        <button
+          type="button"
+          className={`control-button music-toggle ${musicEnabled ? 'is-active' : ''}`}
+          onClick={handleToggleMusic}
+          disabled={musicDisabled}
+        >
+          {musicLabel}
         </button>
       </div>
       <div className="movement-controls">

@@ -88,15 +88,6 @@ function GameShell() {
       )}
       <header className="app-header">
         <h1>Space Killer React</h1>
-        <div className="header-controls">
-          <button
-            type="button"
-            className={`control-button music-toggle ${musicEnabled ? 'is-active' : ''}`}
-            onClick={toggleMusic}
-          >
-            {musicEnabled ? 'Stop Music' : 'Play Music'}
-          </button>
-        </div>
       </header>
       <section className="app-stats">
         <p>Level: {metrics.level}</p>
@@ -140,7 +131,7 @@ function GameShell() {
             <div className="board-overlay" aria-hidden="true">Paused</div>
           ) : null}
         </div>
-        <OnScreenControls />
+        <OnScreenControls musicEnabled={musicEnabled} toggleMusic={toggleMusic} />
       </main>
       <footer className="app-footer">
         <p>Space Killer React is a modern reimagining of the classic arcade shooter.</p>
