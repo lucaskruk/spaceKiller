@@ -4,12 +4,38 @@ import { useGameLoop } from './hooks/useGameLoop.js';
 import { useAudioManager } from './hooks/useAudioManager.js';
 import { GameBoard } from './components/GameBoard.jsx';
 import { KeyboardControls, OnScreenControls } from './components/GameControls.jsx';
-import { LEVEL_CLEAR_TICK_MS } from './game/constants.js';
+import { LEVEL_CLEAR_TICK_MS, HIGH_SCORE_NAME_MAX_LENGTH } from './game/constants.js';
 
 
-function GameOverModal({ score, level, highScores = [], lastScoreId, onRestart }) {
+function GameOverModal({ score, level, highScores = [], lastScoreId, onRestart, onSaveName }) {
   const entries = Array.isArray(highScores) ? highScores : [];
   const formatNumber = (value) => Number(value ?? 0).toLocaleString();
+  const currentEntry = entries.find((entry) => entry.id === lastScoreId) ?? null;
+  const [name, setName] = React.useState(currentEntry?.name ?? '');
+
+  React.useEffect(() => {
+    setName(currentEntry?.name ?? '');
+  }, [currentEntry?.id, currentEntry?.name]);
+
+  const hasPendingEntry = Boolean(currentEntry && !currentEntry.name);
+  const handleSubmit = React.useCallback((event) => {
+    event.preventDefault();
+    if (!currentEntry || typeof onSaveName !== 'function') {
+      return;
+    }
+    const trimmed = name.trim();
+    if (!trimmed) {
+      return;
+    }
+    onSaveName(currentEntry.id, trimmed);
+    setName(trimmed);
+  }, [currentEntry, name, onSaveName]);
+
+  const handleNameChange = React.useCallback((event) => {
+    setName(event.target.value);
+  }, []);
+
+  const isSaveDisabled = !name.trim();
 
   return (
     <div className="game-over-overlay" role="presentation">
@@ -24,17 +50,45 @@ function GameOverModal({ score, level, highScores = [], lastScoreId, onRestart }
         <p className="game-over-modal__level">Level reached: {level}</p>
         <div className="game-over-modal__leaderboard">
           <h3>High Scores</h3>
+          {hasPendingEntry ? (
+            <form className="game-over-modal__name-form" onSubmit={handleSubmit}>
+              <label className="game-over-modal__name-label" htmlFor="high-score-name-input">
+                New high score! Enter your name:
+              </label>
+              <div className="game-over-modal__name-fields">
+                <input
+                  id="high-score-name-input"
+                  type="text"
+                  value={name}
+                  onChange={handleNameChange}
+                  maxLength={HIGH_SCORE_NAME_MAX_LENGTH}
+                  placeholder="Your name"
+                  autoComplete="off"
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  className="control-button control-button--action"
+                  disabled={isSaveDisabled}
+                >
+                  Save
+                </button>
+              </div>
+            </form>
+          ) : null}
           {entries.length ? (
             <ol className="game-over-modal__list">
               {entries.map((entry, index) => {
                 const rank = index + 1;
                 const isLatest = entry.id === lastScoreId;
+                const displayName = entry.name || 'Anonymous';
                 return (
                   <li
                     key={entry.id}
                     className={`game-over-modal__item${isLatest ? ' is-current' : ''}`}
                   >
                     <span className="game-over-modal__rank">#{rank}</span>
+                    <span className="game-over-modal__item-name">{displayName}</span>
                     <span className="game-over-modal__item-score">{formatNumber(entry.score)}</span>
                     <span className="game-over-modal__item-level">Level {entry.level}</span>
                   </li>
@@ -62,10 +116,13 @@ function GameShell() {
   const livesRemaining = Math.max(0, metrics.lives ?? 0);
   const lifeIcons = Array.from({ length: livesRemaining });
   const bossLifeIcons = boss ? Array.from({ length: Math.max(0, boss.lives ?? 0) }) : [];
-  const { reset } = useGameActions();
+  const { reset, setHighScoreName } = useGameActions();
   const handleRestart = React.useCallback(() => {
     reset();
   }, [reset]);
+  const handleSaveHighScoreName = React.useCallback((id, value) => {
+    setHighScoreName(id, value);
+  }, [setHighScoreName]);
 
   const { musicEnabled, toggleMusic } = useAudioManager(events);
   const isTransitioning = Boolean(transition && transition.mode !== 'idle');
@@ -85,6 +142,7 @@ function GameShell() {
           highScores={highScores}
           lastScoreId={lastScoreId}
           onRestart={handleRestart}
+          onSaveName={handleSaveHighScoreName}
         />
       )}
       <header className="app-header">

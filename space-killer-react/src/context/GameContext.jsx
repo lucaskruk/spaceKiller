@@ -59,5 +59,6 @@ export function useGameActions() {
     tick: () => dispatch({ type: ACTIONS.TICK }),
     advanceLevel: () => dispatch({ type: ACTIONS.ADVANCE_LEVEL }),
     respawnPlayer: () => dispatch({ type: ACTIONS.PLAYER_RESPAWNED }),
+    setHighScoreName: (id, name) => dispatch({ type: ACTIONS.SET_HIGH_SCORE_NAME, payload: { id, name } }),
   }), [dispatch]);
 }

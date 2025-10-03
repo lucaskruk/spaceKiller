@@ -26,6 +26,7 @@ export const LEVEL_CLEAR_TICK_MS = 200;
 export const MAX_CONCURRENT_SHOTS = 7;
 export const PLAYER_RELOAD_TICKS = 4;
 export const HIGH_SCORE_LIMIT = 10;
+export const HIGH_SCORE_NAME_MAX_LENGTH = 12;
 export const MUSIC_VOLUME = 0.2;
 
 export const SOUND_SOURCES = {
@@ -117,6 +118,7 @@ export const ACTIONS = {
   PAUSE_TOGGLE: 'pause-toggle',
   ADVANCE_LEVEL: 'advance-level',
   PLAYER_RESPAWNED: 'player-respawned',
+  SET_HIGH_SCORE_NAME: 'set-high-score-name',
 };
 
 export const MIN_WAIT_TIME = 120;

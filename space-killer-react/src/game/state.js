@@ -5,6 +5,7 @@ import {
   MAX_CONCURRENT_SHOTS,
   HIGH_SCORE_LIMIT,
   HIGH_SCORE_STORAGE_KEY,
+  HIGH_SCORE_NAME_MAX_LENGTH,
   ACTIONS,
 } from './constants.js';
 import { buildLevelLayout } from './board.js';
@@ -26,6 +27,17 @@ const generateScoreId = () => {
   return `hs-${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`;
 };
 
+const sanitizeHighScoreName = (value) => {
+  if (typeof value !== 'string') {
+    return '';
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return '';
+  }
+  return trimmed.slice(0, HIGH_SCORE_NAME_MAX_LENGTH);
+};
+
 const normaliseHighScores = (scores) => {
   if (!Array.isArray(scores)) {
     return [];
@@ -35,6 +47,7 @@ const normaliseHighScores = (scores) => {
     .filter((entry) => entry && typeof entry.score === 'number')
     .map((entry) => ({
       id: entry.id ?? generateScoreId(),
+      name: sanitizeHighScoreName(entry.name ?? ''),
       score: entry.score,
       level: typeof entry.level === 'number' ? entry.level : 1,
       timestamp: typeof entry.timestamp === 'number' ? entry.timestamp : Date.now(),
@@ -73,13 +86,14 @@ const cloneHighScores = (scores) => normaliseHighScores(scores);
 const recordHighScore = (state) => produce(state, (draft) => {
   const entry = {
     id: generateScoreId(),
+    name: '',
     score: draft.metrics.currentScore,
     level: draft.metrics.level,
     timestamp: Date.now(),
   };
-  const updated = normaliseHighScores([...(draft.highScores ?? []), entry]);
-  draft.highScores = updated;
-  draft.lastScoreId = updated.some((item) => item.id === entry.id) ? entry.id : null;
+  const updatedList = normaliseHighScores([...(draft.highScores ?? []), entry]);
+  draft.highScores = updatedList;
+  draft.lastScoreId = updatedList.some((item) => item.id === entry.id) ? entry.id : null;
 });
 
 
@@ -158,6 +172,23 @@ export const gameReducer = (state, action) => {
       return prepareNextLevel(state);
     case ACTIONS.PLAYER_RESPAWNED:
       return respawnPlayer(state);
+    case ACTIONS.SET_HIGH_SCORE_NAME:
+      return produce(state, (draft) => {
+        const payload = action.payload ?? {};
+        const { id, name } = payload;
+        if (!id || typeof name !== 'string') {
+          return;
+        }
+        const entry = draft.highScores?.find((item) => item.id === id);
+        if (!entry) {
+          return;
+        }
+        const sanitized = sanitizeHighScoreName(name);
+        if (!sanitized) {
+          return;
+        }
+        entry.name = sanitized;
+      });
     default:
       return state;
   }
