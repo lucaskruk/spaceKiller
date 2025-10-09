@@ -1,4 +1,4 @@
-﻿import { produce } from 'immer';
+import { produce } from 'immer';
 import {
   INITIAL_LIVES,
   INITIAL_WAIT_TIME,
@@ -7,6 +7,8 @@ import {
   HIGH_SCORE_STORAGE_KEY,
   HIGH_SCORE_NAME_MAX_LENGTH,
   ACTIONS,
+  GLOWING_ENEMY_MIN_PER_CAMPAIGN,
+  GLOWING_ENEMY_MAX_PER_CAMPAIGN,
 } from './constants.js';
 import { buildLevelLayout } from './board.js';
 import { advanceGame, prepareNextLevel, respawnPlayer } from './engine/index.js';
@@ -99,6 +101,7 @@ const recordHighScore = (state) => produce(state, (draft) => {
 
 export const createInitialState = () => {
   const { board, enemies, player, boss } = buildLevelLayout(1);
+  const glowingCount = Math.floor(Math.random() * (GLOWING_ENEMY_MAX_PER_CAMPAIGN - GLOWING_ENEMY_MIN_PER_CAMPAIGN + 1)) + GLOWING_ENEMY_MIN_PER_CAMPAIGN;
   return {
     board,
     enemies,
@@ -136,6 +139,9 @@ export const createInitialState = () => {
     },
     boss,
     events: [],
+    glowingEnemiesRemaining: glowingCount,
+    glowingEnemiesDefeated: 0,
+    activeGlowingEnemyLevel: null,
     highScores: loadHighScores(),
     lastScoreId: null,
   };

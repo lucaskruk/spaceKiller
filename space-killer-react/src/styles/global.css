@@ -493,6 +493,36 @@ button {
   height: 26px;
 }
 
+.cell--glowing-enemy {
+  position: relative;
+}
+
+.cell--glowing-enemy::after {
+  content: '';
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(250, 224, 120, 0.55);
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.cell-sprite--glowing {
+  filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.8));
+  animation: glowing-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes glowing-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.85;
+  }
+}
+
 .cell-symbol {
   display: inline-block;
   width: 100%;

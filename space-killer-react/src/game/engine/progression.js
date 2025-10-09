@@ -1,4 +1,4 @@
-﻿import {
+import {
   LAST_LEVEL,
   MAX_CONCURRENT_SHOTS,
   BOSS_LEVEL,
@@ -8,15 +8,64 @@
   LEVEL_BONUS_PER_LIFE,
   LEVEL_ACCURACY_BONUS_THRESHOLDS,
   LEVEL_STREAK_BONUS_VALUE,
+  GLOWING_ENEMY_SPAWN_CHANCE,
+  CELL_TYPES,
 } from '../constants.js';
 import { buildLevelLayout } from '../board.js';
-import { clearCell, fillRowWithFiller, moveCell } from './grid.js';
+import { clearCell, fillRowWithFiller, moveCell, collectCellsOfType } from './grid.js';
 
 const accelerateGame = (draft) => {
   draft.metrics.waitTime = Math.max(
     MIN_WAIT_TIME,
     Math.round(draft.metrics.waitTime * SPEED_MULTIPLIER),
   );
+};
+
+const markGlowingEnemy = (draft, coordinates, { decrementPool = false } = {}) => {
+  if (!coordinates.length) {
+    return;
+  }
+  const choice = coordinates[Math.floor(Math.random() * coordinates.length)];
+  const cell = draft.board?.[choice.row]?.[choice.col];
+  if (!cell) {
+    return;
+  }
+  cell.isGlowing = true;
+  draft.activeGlowingEnemyLevel = draft.metrics?.level ?? null;
+  if (decrementPool) {
+    const remaining = draft.glowingEnemiesRemaining ?? 0;
+    draft.glowingEnemiesRemaining = Math.max(0, remaining - 1);
+  }
+  draft.events?.push?.('glowing-enemy-spawned');
+};
+
+const maybeSpawnGlowingEnemy = (draft) => {
+  if (!draft || !draft.board) {
+    return;
+  }
+  const level = draft.metrics?.level ?? 1;
+  if (level === BOSS_LEVEL) {
+    return;
+  }
+  const coordinates = collectCellsOfType(draft.board, CELL_TYPES.ENEMY);
+  if (!coordinates.length) {
+    return;
+  }
+  if (draft.activeGlowingEnemyLevel === level) {
+    markGlowingEnemy(draft, coordinates, { decrementPool: false });
+    return;
+  }
+  const remaining = draft.glowingEnemiesRemaining ?? 0;
+  if (remaining <= 0) {
+    return;
+  }
+  const standardLevelsRemaining = Math.max(1, Math.max(0, (BOSS_LEVEL - 1) - level + 1));
+  const mustSpawn = remaining >= standardLevelsRemaining;
+  const shouldSpawn = mustSpawn || Math.random() < GLOWING_ENEMY_SPAWN_CHANCE;
+  if (!shouldSpawn) {
+    return;
+  }
+  markGlowingEnemy(draft, coordinates, { decrementPool: true });
 };
 
 const calculateLevelSkillBonus = (metrics) => {
@@ -90,6 +139,7 @@ export const applyLevelLayout = (draft) => {
   draft.ammo.cooldownTicks = 0;
   draft.queuedInput.move = null;
   draft.queuedInput.fire = false;
+  maybeSpawnGlowingEnemy(draft);
   resetTransition(draft);
 };
 
@@ -102,6 +152,7 @@ export const advanceToNextLevel = (draft, { awardBonus } = {}) => {
   }
 
   accelerateGame(draft);
+  draft.activeGlowingEnemyLevel = null;
   draft.queuedInput.move = null;
   draft.queuedInput.fire = false;
 

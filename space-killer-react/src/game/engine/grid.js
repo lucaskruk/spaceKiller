@@ -15,6 +15,9 @@ const setCellType = (board, row, col, type) => {
   cell.type = type;
   cell.blocked = type === CELL_TYPES.BOTH_BULLETS;
   cell.occupantId = null;
+  if ('isGlowing' in cell) {
+    cell.isGlowing = false;
+  }
   return cell;
 };
 
@@ -26,6 +29,9 @@ export const clearCell = (board, row, col) => {
   cell.type = CELL_TYPES.EMPTY;
   cell.blocked = false;
   cell.occupantId = null;
+  if ('isGlowing' in cell) {
+    cell.isGlowing = false;
+  }
 };
 
 export const drawEnemyBullet = (board, row, col) => {
@@ -74,6 +80,9 @@ export const moveCell = (board, fromRow, fromCol, toRow, toCol) => {
   target.type = origin.type;
   target.blocked = origin.blocked;
   target.occupantId = origin.occupantId;
+  if ('isGlowing' in target) {
+    target.isGlowing = Boolean(origin.isGlowing);
+  }
   clearCell(board, fromRow, fromCol);
 };
 

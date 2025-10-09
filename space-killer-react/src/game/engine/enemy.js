@@ -10,6 +10,7 @@ import {
   ENEMY_STREAK_BONUS_CAP,
   ACCURACY_BONUS_THRESHOLDS,
   BOSS_REVENGE_BURST_SHOTS,
+  GLOWING_ENEMY_EXTRA_LIFE,
 } from '../constants.js';
 import { clearCell, collectCellsOfType, drawEnemyBullet, getCell, moveCell } from './grid.js';
 
@@ -110,6 +111,8 @@ export const killEnemy = (draft, row, col) => {
     return;
   }
 
+  const wasGlowing = Boolean(cell.isGlowing);
+
   if (cell.type === CELL_TYPES.BOSS) {
     if (!draft.boss) {
       return;
@@ -136,6 +139,14 @@ export const killEnemy = (draft, row, col) => {
   draft.enemies = Math.max(0, draft.enemies - 1);
   applySkillBonuses(draft, ENEMY_DESTROY_SCORE);
   ensureEnemyBehavior(draft);
+  if (wasGlowing) {
+    if (draft.metrics) {
+      draft.metrics.lives = (draft.metrics.lives ?? 0) + GLOWING_ENEMY_EXTRA_LIFE;
+    }
+    draft.glowingEnemiesDefeated = (draft.glowingEnemiesDefeated ?? 0) + 1;
+    draft.activeGlowingEnemyLevel = null;
+    draft.events.push('glowing-enemy-destroyed');
+  }
   draft.events.push('enemy-explosion');
 };
 

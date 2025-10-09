@@ -15,6 +15,7 @@ export const createCell = (type = CELL_TYPES.EMPTY, overrides = {}) => ({
   type,
   blocked: false,
   occupantId: null,
+  isGlowing: false,
   ...overrides,
 });
 
