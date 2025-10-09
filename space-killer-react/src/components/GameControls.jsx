@@ -7,9 +7,51 @@ import {
   FIRE_KEYS,
 } from '../game/constants.js';
 
+const NON_TEXT_INPUT_TYPES = new Set([
+  'button',
+  'checkbox',
+  'color',
+  'file',
+  'hidden',
+  'image',
+  'radio',
+  'range',
+  'reset',
+  'submit',
+]);
+
 function canAcceptInput(status) {
   return !status.paused && !status.gameOver && !status.levelCleared && !status.playerDied;
 }
+
+function isTypingEvent(event) {
+  if (!event) {
+    return false;
+  }
+  const target = event.target;
+  if (!target || typeof target !== 'object' || target === null) {
+    return false;
+  }
+  const element = 'nodeType' in target && target.nodeType === 1 ? target : null;
+  if (!element) {
+    return false;
+  }
+  const tagName = element.tagName ? element.tagName.toLowerCase() : '';
+  if (tagName === 'textarea') {
+    return true;
+  }
+  if (typeof element.isContentEditable === 'boolean' ? element.isContentEditable : element.getAttribute && element.getAttribute('contenteditable') === 'true') {
+    return true;
+  }
+  if (tagName === 'input') {
+    const typeAttr = element.getAttribute ? element.getAttribute('type') : null;
+    const inputType = typeAttr ? typeAttr.toLowerCase() : 'text';
+    return !NON_TEXT_INPUT_TYPES.has(inputType);
+  }
+  return false;
+}
+
+
 
 export function KeyboardControls() {
   const { queueMoveLeft, queueMoveRight, queueShot, togglePause, reset, advanceLevel } = useGameActions();
@@ -18,28 +60,35 @@ export function KeyboardControls() {
 
   useEffect(() => {
     const handleKeyDown = (event) => {
+      if (isTypingEvent(event)) {
+        return;
+      }
+
       const { key } = event;
 
       if (MOVE_LEFT_KEYS.has(key)) {
-        if (inputEnabled) {
-          queueMoveLeft();
+        if (!inputEnabled) {
+          return;
         }
+        queueMoveLeft();
         event.preventDefault();
         return;
       }
 
       if (MOVE_RIGHT_KEYS.has(key)) {
-        if (inputEnabled) {
-          queueMoveRight();
+        if (!inputEnabled) {
+          return;
         }
+        queueMoveRight();
         event.preventDefault();
         return;
       }
 
       if (FIRE_KEYS.has(key)) {
-        if (inputEnabled) {
-          queueShot();
+        if (!inputEnabled) {
+          return;
         }
+        queueShot();
         event.preventDefault();
         return;
       }

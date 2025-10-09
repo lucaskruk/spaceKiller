@@ -135,7 +135,7 @@ export const killEnemy = (draft, row, col) => {
   clearCell(draft.board, row, col);
   draft.enemies = Math.max(0, draft.enemies - 1);
   applySkillBonuses(draft, ENEMY_DESTROY_SCORE);
-  const behavior = ensureEnemyBehavior(draft);
+  ensureEnemyBehavior(draft);
   draft.events.push('enemy-explosion');
 };
 
