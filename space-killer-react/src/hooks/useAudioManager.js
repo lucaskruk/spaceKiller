@@ -19,25 +19,46 @@ export function useAudioManager(events = []) {
   const [musicEnabled, setMusicEnabled] = useState(true);
 
   useEffect(() => {
-    if (!howls?.music) {
+    const music = howls?.music;
+    if (!music) {
       return undefined;
     }
 
-    if (musicEnabled) {
-      if (!howls.music.playing()) {
+    const tryPlay = () => {
+      if (!musicEnabled) {
+        if (music.playing()) {
+          music.pause();
+        }
+        return;
+      }
+
+      if (!music.playing()) {
         try {
-          howls.music.play();
+          music.play();
         } catch (error) {
           // Ignore autoplay errors; Howler will retry after user interaction.
         }
       }
-    } else if (howls.music.playing()) {
-      howls.music.pause();
-    }
+    };
+
+    const handleUnlock = () => {
+      tryPlay();
+    };
+
+    const handlePlayError = () => {
+      music.once('unlock', handleUnlock);
+    };
+
+    music.on('unlock', handleUnlock);
+    music.on('playerror', handlePlayError);
+
+    tryPlay();
 
     return () => {
-      if (howls.music.playing()) {
-        howls.music.stop();
+      music.off('unlock', handleUnlock);
+      music.off('playerror', handlePlayError);
+      if (music.playing()) {
+        music.stop();
       }
     };
   }, [howls, musicEnabled]);

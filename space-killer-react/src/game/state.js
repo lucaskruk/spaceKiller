@@ -1,4 +1,4 @@
-﻿import { produce } from 'immer';
+import { produce } from 'immer';
 import {
   INITIAL_LIVES,
   INITIAL_WAIT_TIME,
@@ -7,6 +7,8 @@ import {
   HIGH_SCORE_STORAGE_KEY,
   HIGH_SCORE_NAME_MAX_LENGTH,
   ACTIONS,
+  GLOWING_ENEMY_MIN_PER_CAMPAIGN,
+  GLOWING_ENEMY_MAX_PER_CAMPAIGN,
 } from './constants.js';
 import { buildLevelLayout } from './board.js';
 import { advanceGame, prepareNextLevel, respawnPlayer } from './engine/index.js';
@@ -99,11 +101,13 @@ const recordHighScore = (state) => produce(state, (draft) => {
 
 export const createInitialState = () => {
   const { board, enemies, player, boss } = buildLevelLayout(1);
+  const glowingCount = Math.floor(Math.random() * (GLOWING_ENEMY_MAX_PER_CAMPAIGN - GLOWING_ENEMY_MIN_PER_CAMPAIGN + 1)) + GLOWING_ENEMY_MIN_PER_CAMPAIGN;
   return {
     board,
     enemies,
     player,
     status: {
+      started: false,
       gameOver: false,
       paused: false,
       levelCleared: false,
@@ -125,6 +129,7 @@ export const createInitialState = () => {
     ammo: {
       remainingShots: MAX_CONCURRENT_SHOTS,
       cooldownTicks: 0,
+      idleReloadTicks: 0,
     },
     queuedInput: {
       move: null,
@@ -136,6 +141,9 @@ export const createInitialState = () => {
     },
     boss,
     events: [],
+    glowingEnemiesRemaining: glowingCount,
+    glowingEnemiesDefeated: 0,
+    activeGlowingEnemyLevel: null,
     highScores: loadHighScores(),
     lastScoreId: null,
   };
@@ -149,6 +157,17 @@ export const gameReducer = (state, action) => {
       baseState.lastScoreId = null;
       return baseState;
     }
+    case ACTIONS.START_GAME:
+      return produce(state, (draft) => {
+        if (draft.status.started) {
+          return;
+        }
+        draft.status.started = true;
+        draft.status.paused = false;
+        draft.status.gameOver = false;
+        draft.status.playerDied = false;
+        draft.status.levelCleared = false;
+      });
     case ACTIONS.PAUSE_TOGGLE:
       return produce(state, (draft) => {
         draft.status.paused = !draft.status.paused;

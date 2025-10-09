@@ -32,7 +32,7 @@ function renderCellContent(cell) {
       <img
         src="/img/enemy.png"
         alt="Enemy ship"
-        className="cell-sprite"
+        className={clsx('cell-sprite', cell.isGlowing && 'cell-sprite--glowing')}
         draggable={false}
       />
     );
@@ -64,7 +64,7 @@ export function GameBoard() {
             {row.map((cell, colIndex) => (
               <td
                 key={`${rowIndex}-${colIndex}`}
-                className={clsx('cell', `cell-${cell.type}`)}
+                className={clsx('cell', `cell-${cell.type}`, cell.type === CELL_TYPES.ENEMY && cell.isGlowing && 'cell--glowing-enemy')}
                 data-row={rowIndex}
                 data-col={colIndex}
               >

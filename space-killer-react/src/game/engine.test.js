@@ -61,6 +61,22 @@ describe('player actions', () => {
     const afterTick = gameReducer(fired, { type: ACTIONS.TICK });
     expect(afterTick.events.includes('player-fired')).toBe(false);
   });
+
+  it('refills partial bursts after waiting through the reload cooldown', () => {
+    let state = createInitialState();
+
+    state = gameReducer(state, { type: ACTIONS.QUEUE_SHOT });
+
+    expect(state.ammo.remainingShots).toBe(MAX_CONCURRENT_SHOTS - 1);
+    expect(state.ammo.cooldownTicks).toBe(0);
+
+    for (let i = 0; i < PLAYER_RELOAD_TICKS; i += 1) {
+      state = gameReducer(state, { type: ACTIONS.TICK });
+    }
+
+    expect(state.ammo.remainingShots).toBe(MAX_CONCURRENT_SHOTS);
+    expect(state.ammo.cooldownTicks).toBe(0);
+  });
   it('enforces a cooldown after expending the full burst', () => {
     let state = createInitialState();
 
@@ -181,6 +197,7 @@ describe('boss level', () => {
     state = produce(state, (draft) => {
       draft.ammo.remainingShots = 2;
       draft.ammo.cooldownTicks = 0;
+      draft.ammo.idleReloadTicks = 0;
       for (let r = 1; r < draft.board.length - 1; r += 1) {
         for (let c = 1; c < draft.board[r].length - 1; c += 1) {
           draft.board[r][c].type = CELL_TYPES.EMPTY;

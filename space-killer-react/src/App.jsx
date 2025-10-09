@@ -113,13 +113,18 @@ function GameOverModal({ score, level, highScores = [], lastScoreId, onRestart, 
 
 function GameShell() {
   const { metrics, ammo, status, enemies, events, transition, highScores, lastScoreId, boss } = useGameState();
+  const hasStarted = Boolean(status.started);
   const livesRemaining = Math.max(0, metrics.lives ?? 0);
   const lifeIcons = Array.from({ length: livesRemaining });
   const bossLifeIcons = boss ? Array.from({ length: Math.max(0, boss.lives ?? 0) }) : [];
-  const { reset, setHighScoreName } = useGameActions();
+  const { reset, setHighScoreName, start } = useGameActions();
   const handleRestart = React.useCallback(() => {
     reset();
-  }, [reset]);
+    start();
+  }, [reset, start]);
+  const handleStart = React.useCallback(() => {
+    start();
+  }, [start]);
   const handleSaveHighScoreName = React.useCallback((id, value) => {
     setHighScoreName(id, value);
   }, [setHighScoreName]);
@@ -131,7 +136,7 @@ function GameShell() {
   const isTransitioning = Boolean(transition && transition.mode !== 'idle');
   const isLevelClearTransition = transition?.mode === 'level-clear-rise' || transition?.mode === 'level-clear-fill';
   const loopDelay = isLevelClearTransition ? LEVEL_CLEAR_TICK_MS : metrics.waitTime;
-  const isRunning = !status.paused && !status.gameOver && !status.playerDied && (!status.levelCleared || isTransitioning);
+  const isRunning = hasStarted && !status.paused && !status.gameOver && !status.playerDied && (!status.levelCleared || isTransitioning);
 
   useGameLoop(loopDelay, isRunning);
 
@@ -199,6 +204,17 @@ function GameShell() {
           </div>
           <div className="board-stage">
             <GameBoard />
+            {!hasStarted ? (
+              <div className="board-overlay board-overlay--start" role="presentation">
+                <button
+                  type="button"
+                  className="control-button control-button--action"
+                  onClick={handleStart}
+                >
+                  Start Game
+                </button>
+              </div>
+            ) : null}
             {status.paused && !status.gameOver && !status.playerDied ? (
               <div className="board-overlay" aria-hidden="true">Paused</div>
             ) : null}
@@ -208,6 +224,7 @@ function GameShell() {
       </main>
       <footer className="app-footer">
         <p>Space Killer React is a modern reimagining of the classic arcade shooter.</p>
+        <p className="app-footer__controls">Keyboard controls: Move with Left/Right arrows or A/D, Space to fire, P to pause, R to reset.</p>
         <p>Have feedback or want to contribute? visit <a href="https://github.com/lucaskruk/spaceKiller" target="_blank" rel="noreferrer">github repo</a>.</p>
       </footer>
     </div>
