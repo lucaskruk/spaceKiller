@@ -115,10 +115,17 @@ export const ENEMY_ROW = 1;
 export const ENEMY_COL_START = 3;
 export const ENEMY_COL_END = BOARD_COLS - 3;
 
-export const HOLD_INTERVAL = 130;
+export const HOLD_INTERVAL = 210;
 export const MOVE_LEFT_KEYS = new Set(['ArrowLeft', 'a', 'A']);
 export const MOVE_RIGHT_KEYS = new Set(['ArrowRight', 'd', 'D']);
 export const FIRE_KEYS = new Set([' ', 'Space', 'Spacebar', 'w', 'W', 'ArrowUp']);
+
+export const AUTO_FIRE_SHOTS_PER_TICK = 1.5;
+
+export const GLOWING_ENEMY_MIN_PER_CAMPAIGN = 1;
+export const GLOWING_ENEMY_MAX_PER_CAMPAIGN = 2;
+export const GLOWING_ENEMY_SPAWN_CHANCE = 0.25;
+export const GLOWING_ENEMY_EXTRA_LIFE = 1;
 
 export const HIGH_SCORE_STORAGE_KEY = 'space-killer-highscores';
 
