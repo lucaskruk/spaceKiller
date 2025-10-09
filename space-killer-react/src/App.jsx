@@ -208,6 +208,7 @@ function GameShell() {
       </main>
       <footer className="app-footer">
         <p>Space Killer React is a modern reimagining of the classic arcade shooter.</p>
+        <p className="app-footer__controls">Keyboard controls: Move with Left/Right arrows or A/D, Space to fire, P to pause, R to reset.</p>
         <p>Have feedback or want to contribute? visit <a href="https://github.com/lucaskruk/spaceKiller" target="_blank" rel="noreferrer">github repo</a>.</p>
       </footer>
     </div>
