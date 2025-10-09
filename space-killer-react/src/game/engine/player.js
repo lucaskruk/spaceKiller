@@ -18,6 +18,7 @@ export const hitPlayer = (draft, row, col) => {
   if (draft.ammo) {
     draft.ammo.remainingShots = MAX_CONCURRENT_SHOTS;
     draft.ammo.cooldownTicks = 0;
+    draft.ammo.idleReloadTicks = 0;
   }
   draft.player = null;
   draft.events.push('player-hit');
@@ -35,11 +36,15 @@ const consumePlayerShot = (draft) => {
   if (!draft.ammo) {
     return;
   }
-  draft.ammo.remainingShots = Math.max(0, (draft.ammo.remainingShots ?? 0) - 1);
-  if (draft.ammo.remainingShots <= 0) {
-    draft.ammo.remainingShots = 0;
-    draft.ammo.cooldownTicks = PLAYER_RELOAD_TICKS;
+  const ammo = draft.ammo;
+  ammo.remainingShots = Math.max(0, (ammo.remainingShots ?? 0) - 1);
+  if (ammo.remainingShots <= 0) {
+    ammo.remainingShots = 0;
+    ammo.cooldownTicks = PLAYER_RELOAD_TICKS;
+    ammo.idleReloadTicks = 0;
+    return;
   }
+  ammo.idleReloadTicks = PLAYER_RELOAD_TICKS;
 };
 
 const applyPlayerMove = (draft, direction) => {
@@ -135,11 +140,27 @@ export const tickPlayerAmmo = (draft) => {
   if (!draft?.ammo) {
     return;
   }
-  if (draft.ammo.cooldownTicks > 0) {
-    draft.ammo.cooldownTicks -= 1;
-    if (draft.ammo.cooldownTicks <= 0) {
-      draft.ammo.cooldownTicks = 0;
-      draft.ammo.remainingShots = MAX_CONCURRENT_SHOTS;
+  const ammo = draft.ammo;
+  if (ammo.cooldownTicks > 0) {
+    ammo.cooldownTicks -= 1;
+    if (ammo.cooldownTicks <= 0) {
+      ammo.cooldownTicks = 0;
+      ammo.remainingShots = MAX_CONCURRENT_SHOTS;
+      ammo.idleReloadTicks = 0;
+    }
+    return;
+  }
+
+  if (ammo.remainingShots >= MAX_CONCURRENT_SHOTS) {
+    ammo.idleReloadTicks = 0;
+    return;
+  }
+
+  if (ammo.idleReloadTicks > 0) {
+    ammo.idleReloadTicks -= 1;
+    if (ammo.idleReloadTicks <= 0) {
+      ammo.idleReloadTicks = 0;
+      ammo.remainingShots = MAX_CONCURRENT_SHOTS;
     }
   }
 };

@@ -137,6 +137,7 @@ export const applyLevelLayout = (draft) => {
   draft.status.levelCleared = false;
   draft.ammo.remainingShots = MAX_CONCURRENT_SHOTS;
   draft.ammo.cooldownTicks = 0;
+  draft.ammo.idleReloadTicks = 0;
   draft.queuedInput.move = null;
   draft.queuedInput.fire = false;
   maybeSpawnGlowingEnemy(draft);
