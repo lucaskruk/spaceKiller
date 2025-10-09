@@ -24,7 +24,7 @@ const NON_TEXT_INPUT_TYPES = new Set([
 ]);
 
 function canAcceptInput(status) {
-  return !status.paused && !status.gameOver && !status.levelCleared && !status.playerDied;
+  return status.started && !status.paused && !status.gameOver && !status.levelCleared && !status.playerDied;
 }
 
 function isTypingEvent(event) {
@@ -95,6 +95,9 @@ export function KeyboardControls() {
       }
 
       if (key === 'p' || key === 'P') {
+        if (!status.started) {
+          return;
+        }
         togglePause();
         event.preventDefault();
         return;
@@ -114,7 +117,7 @@ export function KeyboardControls() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [inputEnabled, queueMoveLeft, queueMoveRight, queueShot, togglePause, reset, advanceLevel]);
+  }, [inputEnabled, queueMoveLeft, queueMoveRight, queueShot, togglePause, reset, advanceLevel, status.started]);
 
   return null;
 }
@@ -125,8 +128,9 @@ export function OnScreenControls({ musicEnabled = false, toggleMusic }) {
   const activeDirectionRef = useRef(null);
   const autoFireTimerRef = useRef(null);
   const [autoFireEnabled, setAutoFireEnabled] = useState(false);
-  const { queueMoveLeft, queueMoveRight, queueShot, togglePause, reset } = useGameActions();
+  const { queueMoveLeft, queueMoveRight, queueShot, togglePause, reset, start } = useGameActions();
   const state = useGameState();
+  const hasStarted = Boolean(state.status?.started);
   const inputEnabled = canAcceptInput(state.status);
   const gameTickDurationMs = typeof state.metrics?.waitTime === 'number' && state.metrics.waitTime > 0
     ? state.metrics.waitTime
@@ -266,6 +270,16 @@ export function OnScreenControls({ musicEnabled = false, toggleMusic }) {
     triggerAction(queueShot, false);
   }, [inputEnabled, triggerAction, queueShot]);
 
+  const handlePrimaryAction = useCallback(() => {
+    if (!hasStarted) {
+      start();
+      return;
+    }
+    togglePause();
+  }, [hasStarted, start, togglePause]);
+
+  const primaryLabel = hasStarted ? (state.status.paused ? 'Resume' : 'Pause') : 'Start';
+
   const handleAutoFireToggle = useCallback(() => {
     if (!inputEnabled) {
       return;
@@ -299,9 +313,9 @@ export function OnScreenControls({ musicEnabled = false, toggleMusic }) {
         <button
           type="button"
           className="control-button control-button--action"
-          onClick={togglePause}
+          onClick={handlePrimaryAction}
         >
-          {state.status.paused ? 'Resume' : 'Pause'}
+          {primaryLabel}
         </button>
         <button
           type="button"

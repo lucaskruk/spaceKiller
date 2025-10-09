@@ -52,6 +52,7 @@ export function useGameActions() {
 
   return useMemo(() => ({
     reset: () => dispatch({ type: ACTIONS.RESET }),
+    start: () => dispatch({ type: ACTIONS.START_GAME }),
     togglePause: () => dispatch({ type: ACTIONS.PAUSE_TOGGLE }),
     queueMoveLeft: () => dispatch({ type: ACTIONS.QUEUE_MOVE_LEFT }),
     queueMoveRight: () => dispatch({ type: ACTIONS.QUEUE_MOVE_RIGHT }),

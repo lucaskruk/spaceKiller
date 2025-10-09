@@ -107,6 +107,7 @@ export const createInitialState = () => {
     enemies,
     player,
     status: {
+      started: false,
       gameOver: false,
       paused: false,
       levelCleared: false,
@@ -155,6 +156,17 @@ export const gameReducer = (state, action) => {
       baseState.lastScoreId = null;
       return baseState;
     }
+    case ACTIONS.START_GAME:
+      return produce(state, (draft) => {
+        if (draft.status.started) {
+          return;
+        }
+        draft.status.started = true;
+        draft.status.paused = false;
+        draft.status.gameOver = false;
+        draft.status.playerDied = false;
+        draft.status.levelCleared = false;
+      });
     case ACTIONS.PAUSE_TOGGLE:
       return produce(state, (draft) => {
         draft.status.paused = !draft.status.paused;

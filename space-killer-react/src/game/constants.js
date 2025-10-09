@@ -131,6 +131,7 @@ export const HIGH_SCORE_STORAGE_KEY = 'space-killer-highscores';
 
 export const ACTIONS = {
   RESET: 'reset',
+  START_GAME: 'start-game',
   QUEUE_MOVE_LEFT: 'queue-move-left',
   QUEUE_MOVE_RIGHT: 'queue-move-right',
   QUEUE_SHOT: 'queue-shot',
