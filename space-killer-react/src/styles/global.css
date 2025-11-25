@@ -219,6 +219,19 @@ button {
   filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.75));
 }
 
+.hud-item--shield {
+  gap: 0.4rem;
+}
+
+.hud-item--shield .hud-label {
+  letter-spacing: 0.16em;
+}
+
+.hud-item--shield.is-active .hud-value {
+  color: #7dd3fc;
+  text-shadow: 0 0 10px rgba(125, 211, 252, 0.55), 0 0 18px rgba(56, 189, 248, 0.4);
+}
+
 .board-stage {
   position: relative;
   display: inline-grid;
@@ -637,6 +650,29 @@ button {
   height: 26px;
 }
 
+.player-sprite {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+}
+
+.player-sprite__shield {
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(125, 211, 252, 0.55), rgba(56, 189, 248, 0.08) 60%, rgba(56, 189, 248, 0));
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.55), 0 0 22px rgba(125, 211, 252, 0.45);
+  animation: shieldPulse 1.4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.player-sprite--shielded .cell-sprite {
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.65));
+}
+
 .cell--glowing-enemy {
   position: relative;
 }
@@ -667,6 +703,26 @@ button {
   50% {
     transform: scale(1.08);
     opacity: 0.85;
+  }
+}
+
+@keyframes shieldPulse {
+  0% {
+    transform: scale(0.96);
+    opacity: 0.8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.35), 0 0 18px rgba(125, 211, 252, 0.25);
+  }
+
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+    box-shadow: 0 0 18px rgba(56, 189, 248, 0.55), 0 0 26px rgba(125, 211, 252, 0.45);
+  }
+
+  100% {
+    transform: scale(0.98);
+    opacity: 0.9;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.45), 0 0 24px rgba(125, 211, 252, 0.35);
   }
 }
 

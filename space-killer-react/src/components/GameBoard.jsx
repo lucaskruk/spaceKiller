@@ -15,15 +15,18 @@ import {
   TEXT_SYMBOLS,
 } from '../game/constants.js';
 
-function renderCellContent(cell) {
+function renderCellContent(cell, hasShield = false) {
   if (cell.type === CELL_TYPES.PLAYER) {
     return (
-      <img
-        src="/img/player.png"
-        alt="Player ship"
-        className="cell-sprite"
-        draggable={false}
-      />
+      <div className={clsx('player-sprite', hasShield && 'player-sprite--shielded')}>
+        {hasShield ? <span className="player-sprite__shield" aria-hidden="true" /> : null}
+        <img
+          src="/img/player.png"
+          alt="Player ship"
+          className="cell-sprite"
+          draggable={false}
+        />
+      </div>
     );
   }
 
@@ -74,7 +77,8 @@ function renderCellContent(cell) {
 }
 
 export function GameBoard() {
-  const { board } = useGameState();
+  const { board, shield } = useGameState();
+  const hasShield = Boolean(shield?.active && (shield?.hitsRemaining ?? 0) > 0);
 
   return (
     <table className="game-board">
@@ -88,7 +92,7 @@ export function GameBoard() {
                 data-row={rowIndex}
                 data-col={colIndex}
               >
-                {renderCellContent(cell)}
+                {renderCellContent(cell, hasShield)}
               </td>
             ))}
           </tr>

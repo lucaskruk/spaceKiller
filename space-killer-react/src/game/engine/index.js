@@ -4,6 +4,7 @@ import { checkGameMilestones, applyLevelLayout, advanceToNextLevel, runLevelClea
 import { moveEnemies } from './enemy.js';
 import { updateBoss } from './boss.js';
 import { queuePlayerFire, queuePlayerMove, tickPlayerAmmo } from './player.js';
+import { tickShield } from './shield.js';
 import { isPlayable } from './status.js';
 
 export const advanceGame = (state) => {
@@ -20,6 +21,7 @@ export const advanceGame = (state) => {
 
   return produce(state, (draft) => {
     draft.events = [];
+    tickShield(draft);
     tickPlayerAmmo(draft);
     queuePlayerMove(draft);
     queuePlayerFire(draft);

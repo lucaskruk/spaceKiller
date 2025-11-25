@@ -4,7 +4,7 @@ import { useGameLoop } from './hooks/useGameLoop.js';
 import { useAudioManager } from './hooks/useAudioManager.js';
 import { GameBoard } from './components/GameBoard.jsx';
 import { KeyboardControls, OnScreenControls } from './components/GameControls.jsx';
-import { LEVEL_CLEAR_TICK_MS, HIGH_SCORE_NAME_MAX_LENGTH } from './game/constants.js';
+import { LEVEL_CLEAR_TICK_MS, HIGH_SCORE_NAME_MAX_LENGTH, INITIAL_WAIT_TIME } from './game/constants.js';
 
 
 function GameOverModal({ score, level, highScores = [], lastScoreId, onRestart, onSaveName }) {
@@ -112,7 +112,7 @@ function GameOverModal({ score, level, highScores = [], lastScoreId, onRestart, 
 }
 
 function GameShell() {
-  const { metrics, ammo, status, enemies, events, transition, highScores, lastScoreId, boss } = useGameState();
+  const { metrics, ammo, status, enemies, events, transition, highScores, lastScoreId, boss, shield } = useGameState();
   const hasStarted = Boolean(status.started);
   const livesRemaining = Math.max(0, metrics.lives ?? 0);
   const lifeIcons = Array.from({ length: livesRemaining });
@@ -131,6 +131,10 @@ function GameShell() {
 
   const storedHighScore = Array.isArray(highScores) && highScores.length ? highScores[0].score : 0;
   const highestScore = Math.max(Number(storedHighScore ?? 0), Number(metrics.currentScore ?? 0));
+  const shieldState = shield ?? { active: false, ticksRemaining: 0, hitsRemaining: 0 };
+  const shieldSecondsRemaining = shieldState.active
+    ? Math.max(0, Math.ceil(((shieldState.ticksRemaining ?? 0) * (metrics.waitTime ?? INITIAL_WAIT_TIME)) / 1000))
+    : 0;
 
   const { musicEnabled, toggleMusic } = useAudioManager(events);
   const isTransitioning = Boolean(transition && transition.mode !== 'idle');
@@ -181,6 +185,12 @@ function GameShell() {
             <div className="hud-item">
               <span className="hud-label">Score</span>
               <span className="hud-value hud-value--mono">{metrics.currentScore.toLocaleString()}</span>
+            </div>
+            <div className={`hud-item hud-item--shield${shieldState.active ? ' is-active' : ''}`}>
+              <span className="hud-label">Shield</span>
+              <span className="hud-value hud-value--mono">
+                {shieldState.active ? `${shieldSecondsRemaining}s` : 'Off'}
+              </span>
             </div>
             <div className="hud-item">
               <span className="hud-label">High Score</span>

@@ -1,11 +1,15 @@
 import { CELL_TYPES, MAX_CONCURRENT_SHOTS, PLAYER_RELOAD_TICKS } from '../constants.js';
 import { clearCell, drawBothBullets, drawPlayerBullet, getCell, moveCell } from './grid.js';
 import { killEnemy } from './enemy.js';
+import { consumeShieldHit, resetShield } from './shield.js';
 import { isPlayable } from './status.js';
 
 export const hitPlayer = (draft, row, col) => {
   const cell = getCell(draft.board, row, col);
   if (!cell || cell.type !== CELL_TYPES.PLAYER) {
+    return;
+  }
+  if (consumeShieldHit(draft)) {
     return;
   }
   clearCell(draft.board, row, col);
@@ -20,6 +24,7 @@ export const hitPlayer = (draft, row, col) => {
     draft.ammo.cooldownTicks = 0;
     draft.ammo.idleReloadTicks = 0;
   }
+  resetShield(draft);
   draft.player = null;
   draft.events.push('player-hit');
 };
