@@ -142,6 +142,7 @@ function GameShell() {
 
   return (
     <div className="app-shell">
+      <div className="crt-overlay" />
       <KeyboardControls />
       {status.gameOver && (
         <GameOverModal

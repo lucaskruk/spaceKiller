@@ -233,12 +233,12 @@ export function OnScreenControls({ musicEnabled = false, toggleMusic }) {
 
     const manager = nipplejs.create({
       zone: container,
-      mode: 'static',
+      mode: 'dynamic',
       position: { left: '25%', top: '50%' },
       color: '#38bdf8',
-      size: 120,
+      size: 100,
       restJoystick: true,
-      threshold: 0.1,
+      threshold: 0.2,
       multitouch: false,
       maxNumberOfNipples: 1,
     });

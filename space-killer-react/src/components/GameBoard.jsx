@@ -49,6 +49,26 @@ function renderCellContent(cell) {
     );
   }
 
+  if (cell.type === CELL_TYPES.PLAYER_BULLET) {
+    return <div className="bullet bullet--player" />;
+  }
+
+  if (cell.type === CELL_TYPES.ENEMY_BULLET) {
+    return <div className="bullet bullet--enemy" />;
+  }
+
+  if (cell.type === CELL_TYPES.BOSS_DIAGONAL_BULLET) {
+    return <div className="bullet bullet--boss-diagonal" />;
+  }
+
+  if (cell.type === CELL_TYPES.BOSS_COMBINED_BULLET) {
+    return <div className="bullet bullet--boss-combined" />;
+  }
+
+  if (cell.type === CELL_TYPES.BOTH_BULLETS) {
+    return <div className="bullet bullet--both" />;
+  }
+
   const text = TEXT_SYMBOLS[cell.type] ?? EMPTY_SYMBOL;
   return <span className="cell-symbol">{text}</span>;
 }
