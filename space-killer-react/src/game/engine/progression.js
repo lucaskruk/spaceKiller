@@ -9,6 +9,7 @@ import {
   LEVEL_ACCURACY_BONUS_THRESHOLDS,
   LEVEL_STREAK_BONUS_VALUE,
   GLOWING_ENEMY_SPAWN_CHANCE,
+  BOSS_GLOWING_ENEMY_SPAWN_CHANCE,
   CELL_TYPES,
 } from '../constants.js';
 import { buildLevelLayout } from '../board.js';
@@ -21,7 +22,7 @@ const accelerateGame = (draft) => {
   );
 };
 
-const markGlowingEnemy = (draft, coordinates, { decrementPool = false } = {}) => {
+const markGlowingEnemy = (draft, coordinates) => {
   if (!coordinates.length) {
     return;
   }
@@ -32,10 +33,6 @@ const markGlowingEnemy = (draft, coordinates, { decrementPool = false } = {}) =>
   }
   cell.isGlowing = true;
   draft.activeGlowingEnemyLevel = draft.metrics?.level ?? null;
-  if (decrementPool) {
-    const remaining = draft.glowingEnemiesRemaining ?? 0;
-    draft.glowingEnemiesRemaining = Math.max(0, remaining - 1);
-  }
   draft.events?.push?.('glowing-enemy-spawned');
 };
 
@@ -44,28 +41,18 @@ const maybeSpawnGlowingEnemy = (draft) => {
     return;
   }
   const level = draft.metrics?.level ?? 1;
-  if (level === BOSS_LEVEL) {
-    return;
-  }
   const coordinates = collectCellsOfType(draft.board, CELL_TYPES.ENEMY);
   if (!coordinates.length) {
     return;
   }
   if (draft.activeGlowingEnemyLevel === level) {
-    markGlowingEnemy(draft, coordinates, { decrementPool: false });
+    markGlowingEnemy(draft, coordinates);
     return;
   }
-  const remaining = draft.glowingEnemiesRemaining ?? 0;
-  if (remaining <= 0) {
-    return;
+  const spawnChance = level === BOSS_LEVEL ? BOSS_GLOWING_ENEMY_SPAWN_CHANCE : GLOWING_ENEMY_SPAWN_CHANCE;
+  if (Math.random() < spawnChance) {
+    markGlowingEnemy(draft, coordinates);
   }
-  const standardLevelsRemaining = Math.max(1, Math.max(0, (BOSS_LEVEL - 1) - level + 1));
-  const mustSpawn = remaining >= standardLevelsRemaining;
-  const shouldSpawn = mustSpawn || Math.random() < GLOWING_ENEMY_SPAWN_CHANCE;
-  if (!shouldSpawn) {
-    return;
-  }
-  markGlowingEnemy(draft, coordinates, { decrementPool: true });
 };
 
 const calculateLevelSkillBonus = (metrics) => {
@@ -247,6 +234,16 @@ export const checkGameMilestones = (draft) => {
     } else {
       triggerGameOver(draft);
     }
+    return;
+  }
+
+  const isBossLevel = (draft.metrics?.level ?? 0) === BOSS_LEVEL;
+  if (!draft.status.levelCleared && isBossLevel && !draft.boss) {
+    // Boss defeated: end the level regardless of remaining minions.
+    draft.enemies = 0;
+    draft.status.levelCleared = true;
+    startLevelClearTransition(draft);
+    draft.events.push('level-cleared');
     return;
   }
 
