@@ -17,6 +17,8 @@ import { buildLevelLayout } from './board.js';
 import { moveBossDiagonalBullets, moveEnemyBullets } from './engine/projectiles.js';
 import { updateBoss } from './engine/boss.js';
 import { killEnemy } from './engine/enemy.js';
+import { grantShieldPowerUp } from './engine/shield.js';
+import { hitPlayer } from './engine/player.js';
 
 const hasCellOfType = (board, type) =>
   board.some((row) => row.some((cell) => cell.type === type));
@@ -103,6 +105,24 @@ describe('player actions', () => {
 
     const afterCooldownShot = gameReducer(recovered, { type: ACTIONS.QUEUE_SHOT });
     expect(afterCooldownShot.ammo.remainingShots).toBe(MAX_CONCURRENT_SHOTS - 1);
+  });
+
+  it('consumes the shield instead of a life when active', () => {
+    const initial = createInitialState();
+    const { row, col } = initial.player;
+    const withShield = produce(initial, (draft) => {
+      grantShieldPowerUp(draft, { duration: 5, hits: 1 });
+    });
+
+    const afterHit = produce(withShield, (draft) => {
+      draft.events = [];
+      hitPlayer(draft, row, col);
+    });
+
+    expect(afterHit.metrics.lives).toBe(initial.metrics.lives);
+    expect(afterHit.status.playerDied).toBe(false);
+    expect(afterHit.shield.active).toBe(false);
+    expect(afterHit.events).toContain('shield-blocked-hit');
   });
 
 });

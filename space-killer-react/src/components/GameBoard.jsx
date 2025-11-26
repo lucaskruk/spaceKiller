@@ -15,15 +15,18 @@ import {
   TEXT_SYMBOLS,
 } from '../game/constants.js';
 
-function renderCellContent(cell) {
+function renderCellContent(cell, hasShield = false) {
   if (cell.type === CELL_TYPES.PLAYER) {
     return (
-      <img
-        src="/img/player.png"
-        alt="Player ship"
-        className="cell-sprite"
-        draggable={false}
-      />
+      <div className={clsx('player-sprite', hasShield && 'player-sprite--shielded')}>
+        {hasShield ? <span className="player-sprite__shield" aria-hidden="true" /> : null}
+        <img
+          src="/img/player.png"
+          alt="Player ship"
+          className="cell-sprite"
+          draggable={false}
+        />
+      </div>
     );
   }
 
@@ -49,12 +52,33 @@ function renderCellContent(cell) {
     );
   }
 
+  if (cell.type === CELL_TYPES.PLAYER_BULLET) {
+    return <div className="bullet bullet--player" />;
+  }
+
+  if (cell.type === CELL_TYPES.ENEMY_BULLET) {
+    return <div className="bullet bullet--enemy" />;
+  }
+
+  if (cell.type === CELL_TYPES.BOSS_DIAGONAL_BULLET) {
+    return <div className="bullet bullet--boss-diagonal" />;
+  }
+
+  if (cell.type === CELL_TYPES.BOSS_COMBINED_BULLET) {
+    return <div className="bullet bullet--boss-combined" />;
+  }
+
+  if (cell.type === CELL_TYPES.BOTH_BULLETS) {
+    return <div className="bullet bullet--both" />;
+  }
+
   const text = TEXT_SYMBOLS[cell.type] ?? EMPTY_SYMBOL;
   return <span className="cell-symbol">{text}</span>;
 }
 
 export function GameBoard() {
-  const { board } = useGameState();
+  const { board, shield } = useGameState();
+  const hasShield = Boolean(shield?.active && (shield?.hitsRemaining ?? 0) > 0);
 
   return (
     <table className="game-board">
@@ -68,7 +92,7 @@ export function GameBoard() {
                 data-row={rowIndex}
                 data-col={colIndex}
               >
-                {renderCellContent(cell)}
+                {renderCellContent(cell, hasShield)}
               </td>
             ))}
           </tr>

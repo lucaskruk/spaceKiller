@@ -125,7 +125,8 @@ export const AUTO_FIRE_SHOTS_PER_TICK = 1.5;
 export const GLOWING_ENEMY_MIN_PER_CAMPAIGN = 1;
 export const GLOWING_ENEMY_MAX_PER_CAMPAIGN = 2;
 export const GLOWING_ENEMY_SPAWN_CHANCE = 0.25;
-export const GLOWING_ENEMY_EXTRA_LIFE = 1;
+export const GLOWING_ENEMY_SHIELD_DURATION = 120;
+export const GLOWING_ENEMY_SHIELD_HITS = 1;
 
 export const HIGH_SCORE_STORAGE_KEY = 'space-killer-highscores';
 

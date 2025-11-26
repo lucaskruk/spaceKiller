@@ -127,7 +127,40 @@ export function OnScreenControls({ musicEnabled = false, toggleMusic }) {
   const joystickContainerRef = useRef(null);
   const activeDirectionRef = useRef(null);
   const autoFireTimerRef = useRef(null);
-  const [autoFireEnabled, setAutoFireEnabled] = useState(false);
+  const [autoFireEnabled, setAutoFireEnabled] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    const isPortrait = window.innerHeight > window.innerWidth;
+    return isPortrait && window.innerWidth <= 500;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const syncAutoFireToViewport = () => {
+      const isPortrait = window.innerHeight > window.innerWidth;
+      const isNarrow = window.innerWidth <= 500;
+      setAutoFireEnabled((current) => {
+        const shouldEnable = isPortrait && isNarrow;
+        if (shouldEnable) {
+          return true;
+        }
+        // Do not force-disable if the player turned it on manually; keep current state.
+        return current;
+      });
+    };
+
+    syncAutoFireToViewport();
+    window.addEventListener('resize', syncAutoFireToViewport);
+    window.addEventListener('orientationchange', syncAutoFireToViewport);
+    return () => {
+      window.removeEventListener('resize', syncAutoFireToViewport);
+      window.removeEventListener('orientationchange', syncAutoFireToViewport);
+    };
+  }, []);
   const { queueMoveLeft, queueMoveRight, queueShot, togglePause, reset, start } = useGameActions();
   const state = useGameState();
   const hasStarted = Boolean(state.status?.started);
@@ -233,12 +266,12 @@ export function OnScreenControls({ musicEnabled = false, toggleMusic }) {
 
     const manager = nipplejs.create({
       zone: container,
-      mode: 'static',
+      mode: 'dynamic',
       position: { left: '25%', top: '50%' },
       color: '#38bdf8',
-      size: 120,
+      size: 100,
       restJoystick: true,
-      threshold: 0.1,
+      threshold: 0.2,
       multitouch: false,
       maxNumberOfNipples: 1,
     });

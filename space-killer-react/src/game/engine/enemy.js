@@ -10,9 +10,11 @@ import {
   ENEMY_STREAK_BONUS_CAP,
   ACCURACY_BONUS_THRESHOLDS,
   BOSS_REVENGE_BURST_SHOTS,
-  GLOWING_ENEMY_EXTRA_LIFE,
+  GLOWING_ENEMY_SHIELD_DURATION,
+  GLOWING_ENEMY_SHIELD_HITS,
 } from '../constants.js';
 import { clearCell, collectCellsOfType, drawEnemyBullet, getCell, moveCell } from './grid.js';
+import { grantShieldPowerUp } from './shield.js';
 
 const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const rollDice = () => randomInt(1, 6);
@@ -140,9 +142,10 @@ export const killEnemy = (draft, row, col) => {
   applySkillBonuses(draft, ENEMY_DESTROY_SCORE);
   ensureEnemyBehavior(draft);
   if (wasGlowing) {
-    if (draft.metrics) {
-      draft.metrics.lives = (draft.metrics.lives ?? 0) + GLOWING_ENEMY_EXTRA_LIFE;
-    }
+    grantShieldPowerUp(draft, {
+      duration: GLOWING_ENEMY_SHIELD_DURATION,
+      hits: GLOWING_ENEMY_SHIELD_HITS,
+    });
     draft.glowingEnemiesDefeated = (draft.glowingEnemiesDefeated ?? 0) + 1;
     draft.activeGlowingEnemyLevel = null;
     draft.events.push('glowing-enemy-destroyed');

@@ -6,7 +6,8 @@
   --board-scale: 1;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   font-family: 'Press Start 2P', system-ui, sans-serif;
@@ -14,7 +15,39 @@ html, body {
   color: #f8f8f2;
   min-height: 100%;
   touch-action: manipulation;
+  overscroll-behavior: none;
   -webkit-text-size-adjust: 100%;
+  overflow: hidden;
+  position: relative;
+  z-index: 0;
+}
+
+@keyframes starfield {
+  0% {
+    background-position: 0 0, 0 0, 0 0;
+  }
+
+  100% {
+    background-position: 0 1000px, 0 400px, 0 300px;
+  }
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10px 10px, white, rgba(0, 0, 0, 0)),
+    radial-gradient(1px 1px at 20px 20px, white, rgba(0, 0, 0, 0)),
+    radial-gradient(1.5px 1.5px at 30px 30px, white, rgba(0, 0, 0, 0)),
+    radial-gradient(2px 2px at 40px 40px, rgba(255, 255, 255, 0.8), rgba(0, 0, 0, 0)),
+    radial-gradient(2.5px 2.5px at 50px 50px, white, rgba(0, 0, 0, 0)),
+    radial-gradient(1px 1px at 60px 60px, rgba(255, 255, 255, 0.5), rgba(0, 0, 0, 0));
+  background-size: 550px 550px, 350px 350px, 250px 250px, 150px 150px, 450px 450px, 600px 600px;
+  animation: starfield 60s linear infinite;
+  z-index: -1;
+  opacity: 0.7;
+  pointer-events: none;
 }
 
 body {
@@ -32,12 +65,27 @@ button {
 .app-shell {
   width: min(960px, 100%);
   padding: 2rem;
-  background: rgba(0, 0, 0, 0.35);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(10, 16, 28, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  box-shadow: 0 0 40px rgba(8, 170, 255, 0.25);
+  box-shadow: 0 0 40px rgba(8, 170, 255, 0.15);
   display: grid;
   gap: 1.5rem;
+  position: relative;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.crt-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+  z-index: 9999;
+  border-radius: 16px;
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.5);
+  mix-blend-mode: overlay;
 }
 
 .app-header {
@@ -73,6 +121,7 @@ button {
   width: 20px;
   height: 20px;
 }
+
 .lives-display--boss .lives-display__count {
   color: rgba(226, 232, 240, 0.5);
 }
@@ -171,6 +220,19 @@ button {
   filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.75));
 }
 
+.hud-item--shield {
+  gap: 0.4rem;
+}
+
+.hud-item--shield .hud-label {
+  letter-spacing: 0.16em;
+}
+
+.hud-item--shield.is-active .hud-value {
+  color: #7dd3fc;
+  text-shadow: 0 0 10px rgba(125, 211, 252, 0.55), 0 0 18px rgba(56, 189, 248, 0.4);
+}
+
 .board-stage {
   position: relative;
   display: inline-grid;
@@ -179,9 +241,9 @@ button {
   padding: 0.75rem;
   border-radius: 18px;
   box-shadow: 0 12px 24px rgba(3, 7, 18, 0.45);
-  --board-scale: clamp(0.6, (min(80vw, 80vh * 0.95) - 2rem) / 520, 1);
   --board-base-width: 504px;
   --board-base-height: 504px;
+  --board-scale: clamp(0.6, (min(80vw, 75vh) - 1.5rem) / var(--board-base-width), 1);
   width: var(--board-base-width);
   height: var(--board-base-height);
 }
@@ -239,7 +301,7 @@ button {
   background: radial-gradient(circle at center, var(--cell-inner, rgba(148, 163, 184, 0.25)) 0%, rgba(10, 16, 28, 0) 95%);
 }
 
-.cell > * {
+.cell>* {
   position: relative;
   z-index: 1;
 }
@@ -250,26 +312,62 @@ button {
 }
 
 @keyframes cellPop {
-  0% { transform: scale(0.85); filter: brightness(1.6); }
-  65% { transform: scale(1.05); filter: brightness(1.05); }
-  100% { transform: scale(1); filter: brightness(1); }
+  0% {
+    transform: scale(0.85);
+    filter: brightness(1.6);
+  }
+
+  65% {
+    transform: scale(1.05);
+    filter: brightness(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
 }
 
 @keyframes cellStreak {
-  0% { transform: scale(0.65); filter: brightness(1.9) saturate(1.3); }
-  100% { transform: scale(1); filter: brightness(1); }
+  0% {
+    transform: scale(0.65);
+    filter: brightness(1.9) saturate(1.3);
+  }
+
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
 }
 
 @keyframes bossTeleport {
-  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.0); }
-  40% { box-shadow: 0 0 22px 8px rgba(59, 130, 246, 0.45); transform: scale(1.08); }
-  100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.0); transform: scale(1); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.0);
+  }
+
+  40% {
+    box-shadow: 0 0 22px 8px rgba(59, 130, 246, 0.45);
+    transform: scale(1.08);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.0);
+    transform: scale(1);
+  }
 }
 
 @keyframes cellHit {
-  0% { filter: brightness(2); }
-  50% { filter: brightness(1); }
-  100% { filter: brightness(1.2); }
+  0% {
+    filter: brightness(2);
+  }
+
+  50% {
+    filter: brightness(1);
+  }
+
+  100% {
+    filter: brightness(1.2);
+  }
 }
 
 .cell-player,
@@ -298,6 +396,7 @@ button {
   .cell {
     transition: none;
   }
+
   .cell-player,
   .cell-enemy,
   .cell-boss,
@@ -361,6 +460,59 @@ button {
   --cell-inner: rgba(250, 204, 21, 0.45);
 }
 
+.bullet {
+  width: 6px;
+  height: 14px;
+  border-radius: 4px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.bullet--player {
+  background: #4ade80;
+  box-shadow: 0 0 8px #4ade80, 0 0 16px rgba(74, 222, 128, 0.5);
+}
+
+.bullet--enemy {
+  background: #f87171;
+  height: 12px;
+  width: 6px;
+  box-shadow: 0 0 8px #f87171, 0 0 12px rgba(248, 113, 113, 0.5);
+  animation: pulse-red 0.5s infinite alternate;
+}
+
+.bullet--boss-diagonal {
+  background: #38bdf8;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #38bdf8;
+}
+
+.bullet--boss-combined {
+  background: #fbbf24;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 12px #fbbf24;
+}
+
+.bullet--both {
+  background: #fff;
+  box-shadow: 0 0 10px #fff;
+}
+
+@keyframes pulse-red {
+  from {
+    box-shadow: 0 0 4px #f87171;
+  }
+
+  to {
+    box-shadow: 0 0 12px #f87171;
+  }
+}
+
 .control-button {
   padding: 0.75rem 1rem;
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -396,6 +548,7 @@ button {
 .control-button--fire {
   background: rgba(192, 38, 211, 0.45);
 }
+
 .control-panel {
   width: 100%;
   display: flex;
@@ -413,35 +566,43 @@ button {
 
 .movement-controls {
   position: fixed;
-  left: max(1rem, calc((100vw - 960px) / 2 + 1rem));
-  right: max(1rem, calc((100vw - 960px) / 2 + 1rem));
-  bottom: 1.5rem;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 1.5rem;
   pointer-events: none;
   z-index: 500;
+  padding: 1.5rem;
 }
 
 .movement-controls__joystick {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   pointer-events: auto;
-  margin-left: clamp(1rem, 3vw, 2.5rem);
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: auto;
+  height: 55vh;
+  min-height: 240px;
+  width: 100%;
+  z-index: 10;
 }
 
 .movement-controls__joystick .virtual-stick {
-  width: 140px;
-  height: 140px;
-  max-width: 100%;
-  border-radius: 50%;
+  width: 100%;
+  height: 100%;
   touch-action: none;
 }
 
 .movement-controls__joystick.is-disabled {
-  opacity: 0.5;
+  pointer-events: none;
 }
 
 .movement-controls__fire {
@@ -493,6 +654,29 @@ button {
   height: 26px;
 }
 
+.player-sprite {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+}
+
+.player-sprite__shield {
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(125, 211, 252, 0.55), rgba(56, 189, 248, 0.08) 60%, rgba(56, 189, 248, 0));
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.55), 0 0 22px rgba(125, 211, 252, 0.45);
+  animation: shieldPulse 1.4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.player-sprite--shielded .cell-sprite {
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.65));
+}
+
 .cell--glowing-enemy {
   position: relative;
 }
@@ -513,13 +697,36 @@ button {
 }
 
 @keyframes glowing-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
+
   50% {
     transform: scale(1.08);
     opacity: 0.85;
+  }
+}
+
+@keyframes shieldPulse {
+  0% {
+    transform: scale(0.96);
+    opacity: 0.8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.35), 0 0 18px rgba(125, 211, 252, 0.25);
+  }
+
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+    box-shadow: 0 0 18px rgba(56, 189, 248, 0.55), 0 0 26px rgba(125, 211, 252, 0.45);
+  }
+
+  100% {
+    transform: scale(0.98);
+    opacity: 0.9;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.45), 0 0 24px rgba(125, 211, 252, 0.35);
   }
 }
 
@@ -660,24 +867,14 @@ button {
 }
 
 @media (max-width: 768px) {
-  .board-stage {
-    --board-scale: clamp(0.6, (100vw - 2rem) / 520, 1);
-  }
-
-  .game-over-overlay {
-    padding: 1.25rem;
-  }
-
-  .game-over-modal {
-    padding: 1rem 1.25rem;
-  }
-
   body {
-    padding: 4.5rem 1rem 1.5rem;
+    padding: 0.75rem 0.75rem 6rem;
   }
 
   .app-shell {
-    padding: 1.5rem;
+    padding: 1rem;
+    width: 100%;
+    gap: 1rem;
   }
 
   .control-panel {
@@ -717,7 +914,7 @@ button {
     justify-content: space-between;
     align-items: flex-end;
     gap: clamp(1.1rem, 6vw, 2rem);
-    padding: 0;
+    padding: 1rem;
   }
 
   .movement-controls__joystick,
@@ -726,21 +923,26 @@ button {
   }
 
   .movement-controls__joystick {
-    flex: 1;
-    display: flex;
-    justify-content: flex-start;
-    margin-left: 0;
-    padding-left: clamp(0.5rem, 5vw, 1.5rem);
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    height: 60vh;
+    min-height: 200px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    z-index: 10;
   }
 
   .movement-controls__joystick .virtual-stick {
-    min-width: 96px;
-    min-height: 96px;
-    max-width: 140px;
+    width: 100%;
+    height: 100%;
   }
 
   .movement-controls__fire {
-    margin-right: clamp(1.25rem, 7vw, 2.75rem);
+    margin-right: clamp(1rem, 6vw, 2.25rem);
     gap: clamp(0.75rem, 4vw, 1.25rem);
   }
 
@@ -756,16 +958,27 @@ button {
   }
 
   .board-stage {
-    width: calc(100% - 2rem);
+    --board-base-width: 420px;
+    --board-base-height: 420px;
+    --board-scale: clamp(0.5, (min(92vw, 72vh) - 0.5rem) / var(--board-base-width), 0.85);
+    width: calc(100% - 1.5rem);
+    padding: 0.5rem;
   }
 
   .board-stage table.game-board {
-    transform: scale(0.92);
+    transform: scale(var(--board-scale));
     transform-origin: center;
   }
+
+  .game-board td {
+    width: 23px;
+    height: 23px;
+    font-size: 11px;
+  }
+
   .hud-bar {
-    width: calc(100% - 2rem);
-    padding: 0.65rem 0.75rem;
+    width: calc(100% - 1.5rem);
+    padding: 0.6rem 0.75rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.5rem;
   }
@@ -773,8 +986,6 @@ button {
   .hud-item {
     gap: 0.25rem;
   }
-
-
 }
 
 .app-footer {
@@ -802,4 +1013,3 @@ button {
 .app-footer a:hover {
   text-decoration: underline;
 }
-

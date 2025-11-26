@@ -131,6 +131,11 @@ export const createInitialState = () => {
       cooldownTicks: 0,
       idleReloadTicks: 0,
     },
+    shield: {
+      active: false,
+      ticksRemaining: 0,
+      hitsRemaining: 0,
+    },
     queuedInput: {
       move: null,
       fire: false,
