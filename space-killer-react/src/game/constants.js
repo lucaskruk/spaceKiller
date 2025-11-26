@@ -36,6 +36,9 @@ export const BOSS_TELEPORT_COOLDOWN = 10;
 export const BOSS_TELEPORT_CHANCE = 0.10;
 export const BOSS_REVENGE_BURST_SHOTS = 4;
 export const BOSS_REVENGE_BURST_INTERVAL = 1;
+export const BOSS_MIN_PLAYER_VERTICAL_GAP = 3;
+export const BOSS_ADDITIONAL_ENEMY_SPAWN_INTERVAL = 16;
+export const BOSS_ADDITIONAL_ENEMY_SPAWN_CHANCE = 0.5;
 export const LEVEL_CLEAR_TICK_MS = 100;
 export const MAX_CONCURRENT_SHOTS = 7;
 export const PLAYER_RELOAD_TICKS = 3;
@@ -122,10 +125,9 @@ export const FIRE_KEYS = new Set([' ', 'Space', 'Spacebar', 'w', 'W', 'ArrowUp']
 
 export const AUTO_FIRE_SHOTS_PER_TICK = 1.5;
 
-export const GLOWING_ENEMY_MIN_PER_CAMPAIGN = 1;
-export const GLOWING_ENEMY_MAX_PER_CAMPAIGN = 2;
-export const GLOWING_ENEMY_SPAWN_CHANCE = 0.25;
-export const GLOWING_ENEMY_SHIELD_DURATION = 120;
+export const GLOWING_ENEMY_SPAWN_CHANCE = 0.39;
+export const BOSS_GLOWING_ENEMY_SPAWN_CHANCE = 0.6;
+export const GLOWING_ENEMY_SHIELD_DURATION = Math.round(15000 / INITIAL_WAIT_TIME);
 export const GLOWING_ENEMY_SHIELD_HITS = 1;
 
 export const HIGH_SCORE_STORAGE_KEY = 'space-killer-highscores';

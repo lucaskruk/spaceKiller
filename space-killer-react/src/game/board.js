@@ -9,6 +9,7 @@ import {
   BOSS_LEVEL,
   BOSS_INITIAL_LIVES,
   BOSS_TELEPORT_COOLDOWN,
+  BOSS_ADDITIONAL_ENEMY_SPAWN_INTERVAL,
 } from './constants.js';
 
 export const createCell = (type = CELL_TYPES.EMPTY, overrides = {}) => ({
@@ -59,6 +60,7 @@ const placeBoss = (board) => {
       revengeShotsRemaining: 0,
       revengeFireDelay: 0,
       pendingImmediateTeleport: false,
+      additionalEnemySpawnCooldown: BOSS_ADDITIONAL_ENEMY_SPAWN_INTERVAL,
     },
   };
 };
