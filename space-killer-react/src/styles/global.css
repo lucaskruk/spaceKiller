@@ -632,6 +632,29 @@ button {
   border-color: rgba(56, 189, 248, 0.45);
 }
 
+.auto-fire-bar {
+  width: min(560px, 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  z-index: 600;
+  position: relative;
+  margin-top: 0.25rem;
+  pointer-events: auto;
+}
+
+.auto-fire-bar .control-button--auto {
+  min-width: 160px;
+}
+
+.auto-fire-bar .control-button--fire {
+  min-width: 120px;
+  min-height: 64px;
+  font-size: 1rem;
+}
+
 
 
 .music-toggle {
@@ -957,6 +980,23 @@ button {
     font-size: clamp(0.75rem, 3.2vw, 0.9rem);
   }
 
+  .auto-fire-bar {
+    position: relative;
+    left: auto;
+    transform: none;
+    bottom: auto;
+    width: min(520px, 100%);
+    gap: 0.6rem;
+    margin-top: 0;
+    z-index: 650;
+  }
+
+  .auto-fire-bar .control-button--fire {
+    min-width: clamp(110px, 36vw, 150px);
+    min-height: 64px;
+    font-size: clamp(1rem, 4vw, 1.2rem);
+  }
+
   .board-stage {
     --board-base-width: 420px;
     --board-base-height: 420px;
@@ -1012,4 +1052,8 @@ button {
 
 .app-footer a:hover {
   text-decoration: underline;
+}
+
+body.is-mobile-autofire .app-footer {
+  display: none;
 }

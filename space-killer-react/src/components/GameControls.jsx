@@ -54,6 +54,14 @@ function isTypingEvent(event) {
   return false;
 }
 
+function isPhoneSizedViewport() {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  const isPortrait = window.innerHeight > window.innerWidth;
+  return isPortrait && window.innerWidth <= 500;
+}
+
 export function KeyboardControls() {
   const { queueMoveLeft, queueMoveRight, queueShot, togglePause, reset, advanceLevel } = useGameActions();
   const { status } = useGameState();
@@ -127,13 +135,8 @@ export function OnScreenControls({ musicEnabled = false, toggleMusic }) {
   const joystickContainerRef = useRef(null);
   const activeDirectionRef = useRef(null);
   const autoFireTimerRef = useRef(null);
-  const [autoFireEnabled, setAutoFireEnabled] = useState(() => {
-    if (typeof window === 'undefined') {
-      return false;
-    }
-    const isPortrait = window.innerHeight > window.innerWidth;
-    return isPortrait && window.innerWidth <= 500;
-  });
+  const [isPhoneViewport, setIsPhoneViewport] = useState(() => isPhoneSizedViewport());
+  const [autoFireEnabled, setAutoFireEnabled] = useState(() => isPhoneSizedViewport());
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -141,11 +144,10 @@ export function OnScreenControls({ musicEnabled = false, toggleMusic }) {
     }
 
     const syncAutoFireToViewport = () => {
-      const isPortrait = window.innerHeight > window.innerWidth;
-      const isNarrow = window.innerWidth <= 500;
+      const isPhone = isPhoneSizedViewport();
+      setIsPhoneViewport(isPhone);
       setAutoFireEnabled((current) => {
-        const shouldEnable = isPortrait && isNarrow;
-        if (shouldEnable) {
+        if (isPhone) {
           return true;
         }
         // Do not force-disable if the player turned it on manually; keep current state.
@@ -224,6 +226,27 @@ export function OnScreenControls({ musicEnabled = false, toggleMusic }) {
       clearAutoFire();
     };
   }, [autoFireEnabled, inputEnabled, queueShot, clearAutoFire, gameTickDurationMs]);
+
+  const shouldHideMobileFireButton = isPhoneViewport && autoFireEnabled;
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return undefined;
+    }
+
+    const className = 'is-mobile-autofire';
+    const { body } = document;
+
+    if (shouldHideMobileFireButton) {
+      body.classList.add(className);
+    } else {
+      body.classList.remove(className);
+    }
+
+    return () => {
+      body.classList.remove(className);
+    };
+  }, [shouldHideMobileFireButton]);
 
   const handleJoystickMove = useCallback((_, data = {}) => {
     if (!inputEnabled) {
@@ -366,11 +389,8 @@ export function OnScreenControls({ musicEnabled = false, toggleMusic }) {
           {musicLabel}
         </button>
       </div>
-      <div className="movement-controls" aria-label="Movement controls">
-        <div className={`movement-controls__joystick${disabled ? ' is-disabled' : ''}`}>
-          <div ref={joystickContainerRef} className="virtual-stick" aria-hidden="true" />
-        </div>
-        <div className="movement-controls__fire">
+      <div className="auto-fire-bar">
+        {!shouldHideMobileFireButton ? (
           <button
             type="button"
             className="control-button control-button--fire"
@@ -383,15 +403,20 @@ export function OnScreenControls({ musicEnabled = false, toggleMusic }) {
           >
             Fire
           </button>
-          <button
-            type="button"
-            className={`control-button control-button--auto ${autoFireEnabled ? 'is-active' : ''}`}
-            disabled={disabled}
-            onClick={handleAutoFireToggle}
-            aria-pressed={autoFireEnabled}
-          >
-            {autoFireEnabled ? 'Auto Fire: On' : 'Auto Fire: Off'}
-          </button>
+        ) : null}
+        <button
+          type="button"
+          className={`control-button control-button--auto ${autoFireEnabled ? 'is-active' : ''}`}
+          disabled={disabled}
+          onClick={handleAutoFireToggle}
+          aria-pressed={autoFireEnabled}
+        >
+          {autoFireEnabled ? 'Auto Fire: On' : 'Auto Fire: Off'}
+        </button>
+      </div>
+      <div className="movement-controls" aria-label="Movement controls">
+        <div className={`movement-controls__joystick${disabled ? ' is-disabled' : ''}`}>
+          <div ref={joystickContainerRef} className="virtual-stick" aria-hidden="true" />
         </div>
       </div>
     </div>
