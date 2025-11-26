@@ -362,34 +362,35 @@ export function OnScreenControls({ musicEnabled = false, toggleMusic }) {
   }, [toggleMusic]);
   const musicDisabled = typeof toggleMusic !== 'function';
   const musicLabel = musicEnabled ? 'Stop Music' : 'Play Music';
+  const showDesktopHint = !isPhoneViewport;
 
   return (
     <div className="control-panel">
-      <div className="primary-controls">
-        <button
-          type="button"
-          className="control-button control-button--action"
-          onClick={handlePrimaryAction}
-        >
-          {primaryLabel}
-        </button>
-        <button
-          type="button"
-          className="control-button control-button--secondary"
-          onClick={reset}
-        >
-          Reset
-        </button>
-        <button
-          type="button"
-          className={`control-button music-toggle ${musicEnabled ? 'is-active' : ''}`}
-          onClick={handleToggleMusic}
-          disabled={musicDisabled}
-        >
-          {musicLabel}
-        </button>
-      </div>
       <div className="auto-fire-bar">
+        <div className="primary-controls">
+          <button
+            type="button"
+            className="control-button control-button--action"
+            onClick={handlePrimaryAction}
+          >
+            {primaryLabel}
+          </button>
+          <button
+            type="button"
+            className="control-button control-button--secondary"
+            onClick={reset}
+          >
+            Reset
+          </button>
+          <button
+            type="button"
+            className={`control-button music-toggle ${musicEnabled ? 'is-active' : ''}`}
+            onClick={handleToggleMusic}
+            disabled={musicDisabled}
+          >
+            {musicLabel}
+          </button>
+        </div>
         {!shouldHideMobileFireButton ? (
           <button
             type="button"
