@@ -279,6 +279,14 @@ button {
   backdrop-filter: blur(2px);
 }
 
+.board-overlay--start {
+  pointer-events: auto;
+}
+
+.board-overlay--start .control-button {
+  pointer-events: auto;
+}
+
 
 .cell {
   position: relative;
