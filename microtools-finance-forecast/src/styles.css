@@ -1,0 +1,40 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  color: #111827;
+  background: #f3f4f6;
+}
+body {
+  margin: 0;
+}
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+input {
+  padding: 8px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+th, td {
+  text-align: right;
+  padding: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+th:first-child, td:first-child {
+  text-align: left;
+}
